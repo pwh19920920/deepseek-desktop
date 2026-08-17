@@ -18,6 +18,10 @@
 # Harness sidecar output
 /harness-sidecar/
 
+# Tauri generated
+/gen/
+/resources/dsh/
+
 # macOS
 .DS_Store
 
