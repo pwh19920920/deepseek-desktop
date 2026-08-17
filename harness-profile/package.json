@@ -1,0 +1,15 @@
+{
+  "name": "dsh-profile-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop profile for DeepSeek Harness",
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-bundle-base",
+        "@deepseek-ai/dsh-bundle-web-app"
+      ]
+    }
+  },
+  "dependencies": {}
+}

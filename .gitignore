@@ -1,0 +1,28 @@
+# Rust
+/target
+/**/*.rs.bk
+!/.gitignore
+
+# Node
+/node_modules
+/dist
+/.pnp.*
+/.pnpm-store
+.yarn/install-state.gz
+.PnpmStoreVersion
+
+# Tauri
+/.tauri
+/tauri.conf.local.json
+
+# Harness sidecar output
+/harness-sidecar/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
