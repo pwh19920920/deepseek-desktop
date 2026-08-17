@@ -1,5 +1,10 @@
 packages:
   - "."
-  # Link the local harness checkout during development.
-  # In production builds, @deepseek-ai/dsh resolves from the installed npm package.
-  - "../deepseek-harness"
+
+# Allow native build scripts required by @deepseek-ai/dsh's dependencies
+allowBuilds:
+  '@deepseek-ai/dsh-subprocess-local': true
+  '@google/genai': true
+  koffi: true
+  node-pty: true
+  protobufjs: true

@@ -1,5 +1,5 @@
-use tauri_plugin_notification::NotificationExt;
 use tauri::AppHandle;
+use tauri_plugin_notification::NotificationExt;
 
 /// Send a desktop notification.
 #[tauri::command]
@@ -20,10 +20,11 @@ pub async fn send_notification(
 
 /// Check if notifications are allowed for this app.
 #[tauri::command]
-pub async fn is_notification_allowed(
-    app: AppHandle,
-) -> Result<bool, String> {
+pub async fn is_notification_allowed(app: AppHandle) -> Result<bool, String> {
     use tauri_plugin_notification::NotificationExt;
-    let state = app.notification().permission_state().map_err(|e| e.to_string())?;
+    let state = app
+        .notification()
+        .permission_state()
+        .map_err(|e| e.to_string())?;
     Ok(matches!(state, tauri::plugin::PermissionState::Granted))
 }

@@ -48,11 +48,7 @@ pub async fn open_text_file(_app: AppHandle, path: String) -> Result<(), String>
         return Ok(());
     }
 
-    #[cfg(not(any(
-        target_os = "macos",
-        target_os = "windows",
-        target_os = "linux"
-    )))]
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {
         Err("Unsupported platform".to_string())
     }

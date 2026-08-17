@@ -1,8 +1,3 @@
-/// Harness sidecar process management.
-///
-/// Spawns the `dsh web` command as a child process, discovers its listening
-/// port from stdout, and provides a handle for lifecycle management.
-
 use std::path::PathBuf;
 use tokio::process::Command;
 use tracing::info;
@@ -13,7 +8,7 @@ pub mod port_parser;
 pub struct SidecarHandle {
     pub port: u16,
     pub child: tokio::process::Child,
-    /// Path to the `dsh` CLI binary.
+    /// Path to the `dsh` binary (the built JS entry).
     pub dsh_path: PathBuf,
 }
 
@@ -26,29 +21,15 @@ impl SidecarHandle {
 
 /// Spawn the harness sidecar and wait for it to report its listening port.
 ///
-/// The harness is invoked as:
-/// ```notest
-/// node <dsh_path> web --port 0
-/// ```
-/// Port `0` tells the harness to let the OS assign a random free port.
-pub async fn spawn_sidecar(
-    node_path: PathBuf,
-    dsh_path: PathBuf,
-) -> anyhow::Result<SidecarHandle> {
+/// Runs: `<node> <dsh_path> web --port 0`
+/// The harness prints a line like `dsh web: http://127.0.0.1:52631` on startup.
+pub async fn spawn_sidecar(node_path: PathBuf, dsh_path: PathBuf) -> anyhow::Result<SidecarHandle> {
     let mut cmd = Command::new(&node_path);
-    cmd.args([
-        dsh_path.to_string_lossy().as_ref(),
-        "web",
-        "--port",
-        "0",
-    ]);
+    cmd.args([dsh_path.to_string_lossy().as_ref(), "web", "--port", "0"]);
     cmd.stdout(std::process::Stdio::piped());
     cmd.stderr(std::process::Stdio::piped());
 
-    info!(
-        "spawning sidecar: {:?} web --port 0",
-        dsh_path
-    );
+    info!("spawning harness sidecar: {:?} web --port 0", dsh_path);
 
     let mut child = cmd.spawn()?;
     let discovered_port = port_parser::discover_port(&mut child).await?;

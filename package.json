@@ -12,7 +12,7 @@
     "check": "cargo check && cargo clippy -- -D warnings && cargo fmt --check"
   },
   "dependencies": {
-    "@deepseek-ai/dsh": "workspace:*"
+    "@deepseek-ai/dsh": "^0.1.0-rc.5"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"

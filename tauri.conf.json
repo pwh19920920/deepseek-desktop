@@ -3,14 +3,23 @@
   "version": "0.1.0",
   "identifier": "ai.deepseek.harness-desktop",
   "build": {
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:1420",
+    "frontendDist": "public",
+    "devUrl": null,
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [],
+    "windows": [
+      {
+        "label": "main",
+        "title": "DeepSeek Harness Desktop",
+        "width": 1280,
+        "height": 800,
+        "resizable": true,
+        "url": "loading.html"
+      }
+    ],
     "security": {
       "csp": null
     }
@@ -18,6 +27,8 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": []
+    "icon": [
+      "icons/icon.png"
+    ]
   }
 }

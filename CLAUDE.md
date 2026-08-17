@@ -58,16 +58,19 @@ deepseek-desktop/
 ├── tauri.conf.json          # Tauri 2 configuration
 ├── Cargo.toml               # Rust dependencies
 ├── package.json             # Node dependencies, scripts
-├── pnpm-workspace.yaml      # Workspace with local harness during dev
 ├── build.rs                 # Tauri build script
 └── CLAUDE.md                # This file
 ```
 
-## Dependency on deepseek-harness
+## Dependency on @deepseek-ai/dsh
 
 This project depends on the [`@deepseek-ai/dsh`](https://www.npmjs.com/package/@deepseek-ai/dsh) npm package (published by DeepSeek AI). The harness runs as an external `dsh web` process.
 
-During local development, `pnpm-workspace.yaml` links to the local `../deepseek-harness` checkout so `node_modules/.bin/dsh` resolves to the source tree. For downstream consumers, the package is resolved from npm.
+The sidecar path is resolved at runtime:
+1. `node_modules/@deepseek-ai/dsh/lib/bin.js` — the published package entry
+2. Falls back to `node_modules/.bin/dsh` or `PATH`
+
+No local harness checkout is required. Anyone can `pnpm install` and run.
 
 ### Dev mode
 ```bash

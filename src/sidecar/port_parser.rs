@@ -3,28 +3,27 @@
 /// The harness webserver plugin prints a line containing the bound port
 /// when it starts listening. This module parses those lines to discover
 /// the port assigned to the sidecar process.
-
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 /// Regex patterns that match the harness webserver startup log lines.
-/// The exact format varies by harness version, so we try multiple patterns.
 const PORT_PATTERNS: &[&str] = &[
     r"listening on \S+:(\d+)",
     r"bound to \S+:(\d+)",
     r"server started on \S+:(\d+)",
+    // Matches the harness output: "dsh web: http://127.0.0.1:52631"
+    r"127\.0\.0\.1:(\d+)",
     r":(\d+)\s*$", // fallback: bare port at end of line
 ];
 
 /// Extract the port number from a single log line.
-/// Returns `Some(port)` on match, `None` if the line does not contain a recognizable port.
 pub fn extract_port(line: &str) -> anyhow::Result<Option<u16>> {
     for pattern in PORT_PATTERNS {
         let re = regex::Regex::new(pattern)?;
         if let Some(captures) = re.captures(line) {
             let port_str = captures
                 .get(1)
-                .ok_or_else(|| anyhow::anyhow!("port capture group not found"))
-                ?.as_str();
+                .ok_or_else(|| anyhow::anyhow!("port capture group not found"))?
+                .as_str();
             let port: u16 = port_str.parse()?;
             return Ok(Some(port));
         }
@@ -33,12 +32,7 @@ pub fn extract_port(line: &str) -> anyhow::Result<Option<u16>> {
 }
 
 /// Read lines from the sidecar's stdout until a port is discovered.
-///
-/// Takes a mutable reference to the child so the caller retains ownership.
-/// Blocks until a port line is found or the process exits.
-pub async fn discover_port(
-    child: &mut tokio::process::Child,
-) -> anyhow::Result<u16> {
+pub async fn discover_port(child: &mut tokio::process::Child) -> anyhow::Result<u16> {
     let stdout = child
         .stdout
         .take()
@@ -51,7 +45,6 @@ pub async fn discover_port(
         line.clear();
         let bytes = reader.read_line(&mut line).await?;
         if bytes == 0 {
-            // EOF — process exited without printing a port
             let status = child.try_wait()?;
             return Err(anyhow::anyhow!(
                 "sidecar exited before port discovery (exit: {:?})",
@@ -68,6 +61,12 @@ pub async fn discover_port(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_port_from_harness_format() {
+        let line = "dsh web: http://127.0.0.1:52631\n";
+        assert_eq!(extract_port(line).unwrap(), Some(52631));
+    }
 
     #[test]
     fn test_parse_port_from_listening_line() {
@@ -90,11 +89,5 @@ mod tests {
     #[test]
     fn test_parse_port_handles_empty_string() {
         assert_eq!(extract_port("").unwrap(), None);
-    }
-
-    #[test]
-    fn test_parse_port_with_fallback_pattern() {
-        let line = "listening on 0.0.0.0:34567\n";
-        assert_eq!(extract_port(line).unwrap(), Some(34567));
     }
 }

@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 use std::sync::mpsc;
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::Manager;
 use tokio::runtime::Runtime;
-use tracing::{info, error};
+use tracing::{error, info};
 
-pub mod sidecar;
 pub mod capabilities;
+pub mod sidecar;
 
 /// Handle to the running harness sidecar, stored in Tauri state.
 #[derive(Clone)]
@@ -22,7 +22,6 @@ impl SidecarState {
     }
 }
 
-/// Message sent from the sidecar thread to the main Tauri thread.
 enum SidecarMessage {
     Ready(sidecar::SidecarHandle),
     Error(String),
@@ -32,27 +31,21 @@ fn find_node() -> anyhow::Result<PathBuf> {
     which::which("node").map_err(|e| anyhow::anyhow!("node not found in PATH: {}", e))
 }
 
-/// Resolve the path to the `dsh` CLI binary.
 fn resolve_dsh_path() -> PathBuf {
-    let local_bin = PathBuf::from("node_modules/.bin/dsh");
-    if local_bin.exists() {
-        return local_bin;
+    let direct = PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
+    if direct.exists() {
+        return direct;
     }
-    let lib_bin = PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
-    if lib_bin.exists() {
-        return lib_bin;
-    }
-    if let Ok(path) = which::which("dsh") {
-        return path;
+    let shim = PathBuf::from("node_modules/.bin/dsh");
+    if shim.exists() {
+        return PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
     }
     PathBuf::from("dsh")
 }
 
-/// Clean up the sidecar process. Must be called on the Tokio runtime thread.
 fn shutdown_sidecar_blocking(state: &SidecarState) -> anyhow::Result<()> {
     let mut child_opt = state.child.lock().unwrap();
     if let Some(mut child) = child_opt.take() {
-        // Spawn the async kill on a blocking thread since we can't await here
         std::thread::spawn(move || {
             let rt = Runtime::new().expect("failed to create tokio runtime for shutdown");
             rt.block_on(async {
@@ -83,6 +76,7 @@ pub fn run() {
             let (tx, rx) = mpsc::channel::<SidecarMessage>();
             let handle = app.handle().clone();
 
+            // Spawn sidecar in a separate thread
             std::thread::spawn(move || {
                 let rt = Runtime::new().expect("failed to create tokio runtime");
                 let result = rt.block_on(async {
@@ -96,17 +90,16 @@ pub fn run() {
                 });
 
                 match result {
-                    Ok(sc) => { let _ = tx.send(SidecarMessage::Ready(sc)); }
-                    Err(e) => { let _ = tx.send(SidecarMessage::Error(e.to_string())); }
+                    Ok(sc) => {
+                        let _ = tx.send(SidecarMessage::Ready(sc));
+                    }
+                    Err(e) => {
+                        let _ = tx.send(SidecarMessage::Error(e.to_string()));
+                    }
                 }
             });
 
-            WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-                .title("DeepSeek Harness Desktop")
-                .inner_size(1280.0, 800.0)
-                .resizable(true)
-                .build()?;
-
+            // Wait for sidecar to be ready on the main thread
             match rx.recv() {
                 Ok(SidecarMessage::Ready(sc)) => {
                     let url_str = sc.url();
@@ -117,6 +110,7 @@ pub fn run() {
                         dsh_path: sc.dsh_path,
                     };
                     app.manage(state);
+
                     if let Some(window) = handle.get_webview_window("main") {
                         let _ = window.navigate(url_str.parse().expect("valid URL"));
                     }
@@ -137,7 +131,6 @@ pub fn run() {
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if let Some(state) = window.try_state::<SidecarState>() {
-                    // Shutdown is synchronous from the main thread
                     if let Err(e) = shutdown_sidecar_blocking(&state) {
                         error!("error shutting down sidecar: {}", e);
                     }

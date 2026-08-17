@@ -1,10 +1,11 @@
-use tauri_plugin_dialog::{DialogExt, FilePath};
 use tauri::AppHandle;
+use tauri_plugin_dialog::{DialogExt, FilePath};
 
 /// Convert a FilePath enum to a string path.
 fn filepath_to_string(fp: FilePath) -> String {
     match fp {
-        FilePath::Url(url) => url.to_file_path()
+        FilePath::Url(url) => url
+            .to_file_path()
             .unwrap_or_default()
             .to_string_lossy()
             .to_string(),
@@ -31,10 +32,7 @@ pub async fn pick_directory(
 /// Open a native file picker dialog and return the selected file path.
 /// Returns `Ok(None)` if the user cancels.
 #[tauri::command]
-pub async fn pick_file(
-    app: AppHandle,
-    prompt: Option<String>,
-) -> Result<Option<String>, String> {
+pub async fn pick_file(app: AppHandle, prompt: Option<String>) -> Result<Option<String>, String> {
     let chosen: Option<FilePath> = app
         .dialog()
         .file()
@@ -48,8 +46,8 @@ pub async fn pick_file(
 #[tauri::command]
 pub async fn list_directory(path: String) -> Result<serde_json::Value, String> {
     use std::fs;
-    let entries = fs::read_dir(&path)
-        .map_err(|e| format!("Failed to read directory {}: {}", path, e))?;
+    let entries =
+        fs::read_dir(&path).map_err(|e| format!("Failed to read directory {}: {}", path, e))?;
 
     let mut items = Vec::new();
     for entry in entries {
