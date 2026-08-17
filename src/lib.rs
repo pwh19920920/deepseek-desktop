@@ -31,16 +31,35 @@ fn find_node() -> anyhow::Result<PathBuf> {
     which::which("node").map_err(|e| anyhow::anyhow!("node not found in PATH: {}", e))
 }
 
-fn resolve_dsh_path() -> PathBuf {
-    let direct = PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
-    if direct.exists() {
-        return direct;
+/// Resolve the path to dsh's `lib/bin.js`.
+///
+/// Priority:
+/// 1. Bundled resource in the .app (`Contents/Resources/resources/dsh/lib/bin.js`) — release builds
+/// 2. Project-local `resources/dsh/lib/bin.js` — dev builds from this repo
+/// 3. `node_modules/@deepseek-ai/dsh/lib/bin.js` — dev builds with pnpm workspace
+fn resolve_dsh_path(app_resource_dir: Option<PathBuf>) -> anyhow::Result<PathBuf> {
+    // Release build: dsh is bundled under {resource_dir}/resources/dsh/lib/bin.js
+    // (Tauri preserves the source directory structure when copying resources)
+    if let Some(ref resource_dir) = app_resource_dir {
+        let bundled = resource_dir.join("resources").join("dsh").join("lib").join("bin.js");
+        if bundled.exists() {
+            return Ok(bundled);
+        }
     }
-    let shim = PathBuf::from("node_modules/.bin/dsh");
-    if shim.exists() {
-        return PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
+    // Dev build: look in project-local resources/
+    let local = PathBuf::from("resources/dsh/lib/bin.js");
+    if local.exists() {
+        return Ok(local);
     }
-    PathBuf::from("dsh")
+    // Dev build with pnpm workspace: fall back to node_modules
+    let node_modules = PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
+    if node_modules.exists() {
+        return Ok(node_modules);
+    }
+    anyhow::bail!(
+        "dsh not found. Searched:\n  - bundled resource ({:?}/resources/dsh/lib/bin.js)\n  - resources/dsh/lib/bin.js\n  - node_modules/@deepseek-ai/dsh/lib/bin.js",
+        app_resource_dir.as_ref().map(|d| d.display().to_string()).unwrap_or_default()
+    )
 }
 
 fn shutdown_sidecar_blocking(state: &SidecarState) -> anyhow::Result<()> {
@@ -76,12 +95,16 @@ pub fn run() {
             let (tx, rx) = mpsc::channel::<SidecarMessage>();
             let handle = app.handle().clone();
 
+            // Resolve dsh path before moving handle into the thread
+            let resource_dir = app.path().resource_dir().unwrap_or_default();
+            let dsh_path = resolve_dsh_path(Some(resource_dir.clone()))?;
+            info!("dsh resolved at {:?}", dsh_path);
+
             // Spawn sidecar in a separate thread
             std::thread::spawn(move || {
                 let rt = Runtime::new().expect("failed to create tokio runtime");
                 let result = rt.block_on(async {
                     let node = find_node()?;
-                    let dsh_path = resolve_dsh_path();
                     info!(
                         "spawning harness sidecar node={:?} dsh={:?}",
                         node, dsh_path
