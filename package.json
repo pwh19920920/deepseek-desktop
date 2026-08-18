@@ -1,22 +1,7 @@
 {
-  "name": "deepseek-desktop",
+  "name": "dsh-desktop",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "description": "DeepSeek Harness desktop application",
-  "license": "MIT",
-  "scripts": {
-    "dev": "tauri dev",
-    "build": "tauri build",
-    "tauri": "tauri",
-    "check": "cargo check && cargo clippy -- -D warnings && cargo fmt --check",
-    "fetch-node": "bash scripts/fetch-node.sh"
-  },
-  "postinstall": "bash scripts/fetch-node.sh",
-  "dependencies": {
-    "@deepseek-ai/dsh": "^0.1.0-rc.5"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2"
-  }
+  "description": "DeepSeek Harness Desktop - Tauri 2 app wrapping deepseek-harness",
+  "license": "MIT"
 }

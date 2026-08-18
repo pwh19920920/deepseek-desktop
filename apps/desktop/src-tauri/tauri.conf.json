@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "identifier": "ai.deepseek.harness-desktop",
   "build": {
-    "frontendDist": "public",
+    "frontendDist": "../dist",
     "devUrl": null,
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
@@ -17,7 +17,7 @@
         "width": 1280,
         "height": 800,
         "resizable": true,
-        "url": "loading.html"
+        "url": "index.html"
       }
     ],
     "security": {
