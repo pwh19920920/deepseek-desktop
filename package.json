@@ -13,6 +13,5 @@
     "build:all": "node scripts/build.js all",
     "dev": "node scripts/dev.js",
     "clean": "node scripts/clean.js"
-  },
-  "postinstall": "node scripts/fetch-node.js"
+  }
 }
