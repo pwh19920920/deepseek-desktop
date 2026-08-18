@@ -7,6 +7,10 @@
   "scripts": {
     "install": "node scripts/index.js install",
     "build": "node scripts/index.js build",
+    "build:macos": "node scripts/index.js build macos",
+    "build:windows": "node scripts/index.js build windows",
+    "build:linux": "node scripts/index.js build linux",
+    "build:all": "node scripts/index.js build all",
     "dev": "node scripts/index.js dev",
     "clean": "node scripts/index.js clean"
   },
