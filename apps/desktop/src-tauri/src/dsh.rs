@@ -1,10 +1,9 @@
 use std::path::PathBuf;
-use tauri::AppHandle;
 use tauri_plugin_shell::process::CommandChild;
-use tauri_plugin_shell::ShellExt;
-use tracing::info;
 
 pub mod port;
+pub mod shutdown;
+pub mod spawn;
 
 /// Handle to a running harness sidecar process.
 pub struct SidecarHandle {
@@ -20,22 +19,39 @@ impl SidecarHandle {
     }
 }
 
-/// Spawn the harness sidecar using Tauri's shell sidecar API.
-pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result<SidecarHandle> {
-    let cmd = app.shell().sidecar("node")?;
-    let cmd = cmd.args([dsh_path.to_string_lossy().as_ref(), "web", "--port", "0"]);
+pub use shutdown::shutdown_child;
+pub use spawn::spawn_sidecar;
 
-    info!(
-        "spawning harness sidecar via shell.sidecar(\"node\"): {:?}",
-        dsh_path
-    );
+#[cfg(test)]
+mod tests {
+    use super::port;
 
-    let (mut cmd_events, child) = cmd.spawn()?;
-    let discovered_port = port::discover_port(&mut cmd_events).await?;
+    #[test]
+    fn test_parse_port_from_harness_format() {
+        let line = "dsh web: http://127.0.0.1:52631\n";
+        assert_eq!(port::extract_port(line).unwrap(), Some(52631));
+    }
 
-    Ok(SidecarHandle {
-        port: discovered_port,
-        child,
-        dsh_path,
-    })
+    #[test]
+    fn test_parse_port_from_listening_line() {
+        let line = "  dsh: server listening on 127.0.0.1:49152\n";
+        assert_eq!(port::extract_port(line).unwrap(), Some(49152));
+    }
+
+    #[test]
+    fn test_parse_port_from_different_format() {
+        let line = "[webserver] bound to 127.0.0.1:8080\n";
+        assert_eq!(port::extract_port(line).unwrap(), Some(8080));
+    }
+
+    #[test]
+    fn test_parse_port_returns_none_for_non_matching_line() {
+        let line = "some random log output\n";
+        assert_eq!(port::extract_port(line).unwrap(), None);
+    }
+
+    #[test]
+    fn test_parse_port_handles_empty_string() {
+        assert_eq!(port::extract_port("").unwrap(), None);
+    }
 }
