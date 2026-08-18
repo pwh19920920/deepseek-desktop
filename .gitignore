@@ -30,3 +30,6 @@
 .vscode/
 *.swp
 *.swo
+
+# Generated binaries
+/binaries/
