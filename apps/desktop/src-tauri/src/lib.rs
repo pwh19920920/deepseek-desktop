@@ -162,6 +162,19 @@ pub fn run() {
                 window.hide().unwrap_or_default();
             }
         })
-        .run(tauri::generate_context!())
-        .expect("error while running deepseek-desktop");
+        .build(tauri::generate_context!())
+        .expect("error while building deepseek-desktop")
+        .run(|app_handle, event| {
+            // macOS: when the dock icon is clicked and there are no visible windows,
+            // restore the hidden window (which was hidden-on-close to tray instead of quitting)
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { has_visible_windows, .. } = event {
+                if !has_visible_windows {
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+            }
+        });
 }
