@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::sync::mpsc;
 use tauri::Manager;
+use tauri_plugin_shell::process::CommandChild;
 use tokio::runtime::Runtime;
 use tracing::{error, info};
 
@@ -11,7 +12,7 @@ pub mod sidecar;
 #[derive(Clone)]
 pub struct SidecarState {
     pub port: u16,
-    child: std::sync::Arc<std::sync::Mutex<Option<tokio::process::Child>>>,
+    child: std::sync::Arc<std::sync::Mutex<Option<CommandChild>>>,
     #[allow(dead_code)]
     dsh_path: PathBuf,
 }
@@ -27,10 +28,6 @@ enum SidecarMessage {
     Error(String),
 }
 
-fn find_node() -> anyhow::Result<PathBuf> {
-    which::which("node").map_err(|e| anyhow::anyhow!("node not found in PATH: {}", e))
-}
-
 /// Resolve the path to dsh's `lib/bin.js`.
 ///
 /// Priority:
@@ -41,7 +38,11 @@ fn resolve_dsh_path(app_resource_dir: Option<PathBuf>) -> anyhow::Result<PathBuf
     // Release build: dsh is bundled under {resource_dir}/resources/dsh/lib/bin.js
     // (Tauri preserves the source directory structure when copying resources)
     if let Some(ref resource_dir) = app_resource_dir {
-        let bundled = resource_dir.join("resources").join("dsh").join("lib").join("bin.js");
+        let bundled = resource_dir
+            .join("resources")
+            .join("dsh")
+            .join("lib")
+            .join("bin.js");
         if bundled.exists() {
             return Ok(bundled);
         }
@@ -64,13 +65,9 @@ fn resolve_dsh_path(app_resource_dir: Option<PathBuf>) -> anyhow::Result<PathBuf
 
 fn shutdown_sidecar_blocking(state: &SidecarState) -> anyhow::Result<()> {
     let mut child_opt = state.child.lock().unwrap();
-    if let Some(mut child) = child_opt.take() {
+    if let Some(child) = child_opt.take() {
         std::thread::spawn(move || {
-            let rt = Runtime::new().expect("failed to create tokio runtime for shutdown");
-            rt.block_on(async {
-                let _ = child.kill().await;
-                let _ = child.wait().await;
-            });
+            let _ = child.kill();
         });
     }
     Ok(())
@@ -101,15 +98,12 @@ pub fn run() {
             info!("dsh resolved at {:?}", dsh_path);
 
             // Spawn sidecar in a separate thread
+            let app_for_sidecar = app.handle().clone();
             std::thread::spawn(move || {
                 let rt = Runtime::new().expect("failed to create tokio runtime");
                 let result = rt.block_on(async {
-                    let node = find_node()?;
-                    info!(
-                        "spawning harness sidecar node={:?} dsh={:?}",
-                        node, dsh_path
-                    );
-                    sidecar::spawn_sidecar(node, dsh_path).await
+                    info!("spawning harness sidecar dsh={:?}", dsh_path);
+                    sidecar::spawn_sidecar(&app_for_sidecar, dsh_path).await
                 });
 
                 match result {

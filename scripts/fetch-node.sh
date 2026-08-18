@@ -51,24 +51,33 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BINARIES_DIR="${PROJECT_ROOT}/binaries"
 
+# Determine the Tauri target triple for the binary name.
+# In dev mode, use the current host triple (rustc -vV).
+# This matches Tauri 2's externalBin naming convention:
+#   binary-name-{target-triple}  (e.g. node-aarch64-apple-darwin)
+TARGET_TRIPLE=$(rustc -vV 2>/dev/null | grep '^host:' | awk '{print $2}' || echo "")
+
+if [[ -z "${TARGET_TRIPLE}" ]]; then
+  echo "[fetch-node] warning: could not determine target triple, using 'node' as fallback"
+  BIN_NAME="node"
+elif [[ "${PLATFORM}" == "win" ]]; then
+  BIN_NAME="node-${TARGET_TRIPLE}.exe"
+else
+  BIN_NAME="node-${TARGET_TRIPLE}"
+fi
+
 # Download directory (avoid re-downloading if already present)
 DOWNLOAD_DIR="${PROJECT_ROOT}/.tmp/node-download"
 mkdir -p "${DOWNLOAD_DIR}"
 
 echo "[fetch-node] target: ${NODE_VERSION} for ${PLATFORM}-${ARCH}"
 echo "[fetch-node] archive: ${ARCHIVE}"
+echo "[fetch-node] output binary name: ${BIN_NAME}"
 
 # Check if the target binary already exists
-if [[ "${PLATFORM}" == "win" ]]; then
-  if [[ -f "${BINARIES_DIR}/node.exe" ]]; then
-    echo "[fetch-node] node.exe already present, skipping."
-    exit 0
-  fi
-else
-  if [[ -f "${BINARIES_DIR}/node" ]]; then
-    echo "[fetch-node] node already present, skipping."
-    exit 0
-  fi
+if [[ -f "${BINARIES_DIR}/${BIN_NAME}" ]]; then
+  echo "[fetch-node] ${BIN_NAME} already present, skipping."
+  exit 0
 fi
 
 # Download
@@ -84,17 +93,19 @@ echo "[fetch-node] extracting..."
 if [[ "${EXT}" == "zip" ]]; then
   # Windows: zip contains a top-level directory named node-${version}-win-x64/
   unzip -q "${DOWNLOAD_DIR}/${ARCHIVE}" -d "${DOWNLOAD_DIR}/extracted"
-  cp "${DOWNLOAD_DIR}/extracted/node-${NODE_VERSION}-win-x64/node.exe" "${BINARIES_DIR}/node.exe"
+  cp "${DOWNLOAD_DIR}/extracted/node-${NODE_VERSION}-win-x64/node.exe" "${BINARIES_DIR}/${BIN_NAME}"
 else
   # macOS/Linux: tar.gz contains a top-level directory named node-${version}-${platform}-${arch}/
   tar xzf "${DOWNLOAD_DIR}/${ARCHIVE}" -C "${DOWNLOAD_DIR}/extracted"
-  cp "${DOWNLOAD_DIR}/extracted/node-${NODE_VERSION}-${PLATFORM}-${ARCH}/bin/node" "${BINARIES_DIR}/node"
+  cp "${DOWNLOAD_DIR}/extracted/node-${NODE_VERSION}-${PLATFORM}-${ARCH}/bin/node" "${BINARIES_DIR}/${BIN_NAME}"
 fi
 
-# Make executable
-chmod +x "${BINARIES_DIR}/node"
+# Make executable (not needed for .exe on Windows)
+if [[ "${PLATFORM}" != "win" ]]; then
+  chmod +x "${BINARIES_DIR}/${BIN_NAME}"
+fi
 
 # Cleanup temp files
 rm -rf "${DOWNLOAD_DIR}"
 
-echo "[fetch-node] done: ${BINARIES_DIR}/node"
+echo "[fetch-node] done: ${BINARIES_DIR}/${BIN_NAME}"
