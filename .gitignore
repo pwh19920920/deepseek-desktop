@@ -47,3 +47,4 @@ apps/desktop/src-tauri/gen/
 apps/desktop/.tmp/
 apps/desktop/node_modules/
 apps/desktop/pnpm-lock.yaml
+apps/desktop/src-tauri/releases/

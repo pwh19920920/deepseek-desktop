@@ -28,8 +28,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: apps/desktop
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run cargo check
         run: cargo check

@@ -5,7 +5,7 @@
   "description": "DeepSeek Harness Desktop - Tauri 2 app wrapping deepseek-harness",
   "license": "MIT",
   "scripts": {
-    "install": "node scripts/install.js",
+    "bootstrap": "node scripts/install.js",
     "build": "node scripts/build.js",
     "build:macos": "node scripts/build.js macos",
     "build:windows": "node scripts/build.js windows",

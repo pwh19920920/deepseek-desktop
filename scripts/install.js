@@ -3,7 +3,6 @@
 
 const { execSync } = require('child_process');
 const path = require('path');
-const fs = require('fs');
 
 console.log('=== Installing dependencies ===');
 
@@ -13,14 +12,11 @@ const originalCwd = process.cwd();
 
 try {
   process.chdir(desktopDir);
-  execSync('pnpm install', { stdio: 'inherit' });
+  execSync('pnpm install --ignore-scripts', { stdio: 'inherit' });
 } catch (e) {
   console.log('\n[warn] pnpm install had issues, continuing...');
 } finally {
   process.chdir(originalCwd);
 }
-
-console.log('\n=== Fetching Node.js ===');
-execSync('node ' + path.join(__dirname, 'fetch-node.js'), { stdio: 'inherit' });
 
 console.log('\n=== Install complete ===');

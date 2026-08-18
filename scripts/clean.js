@@ -8,7 +8,13 @@ console.log('=== Cleaning ===');
 const dirs = [
   'apps/desktop/src-tauri/target',
   'apps/desktop/src-tauri/gen',
-  '.tmp'
+  'apps/desktop/src-tauri/resources',
+  'apps/desktop/src-tauri/binaries',
+  'apps/desktop/dist',
+  'apps/desktop/node_modules',
+  'resources/dsh',
+  'node_modules',
+  '.tmp',
 ];
 
 for (const dir of dirs) {

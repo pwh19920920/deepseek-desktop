@@ -45,12 +45,13 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: apps/desktop
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Fetch Node.js binary
-        run: bash scripts/fetch-node.sh
-        working-directory: apps/desktop
+        run: node scripts/fetch-node.js ${{ matrix.target }}
+
+      - name: Build frontend
+        run: pnpm --filter @dsh/desktop exec vite build
 
       - name: Build
         run: pnpm tauri build ${{ matrix.args }}
