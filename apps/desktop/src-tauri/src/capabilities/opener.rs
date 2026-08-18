@@ -17,7 +17,7 @@ pub async fn open_text_file(_app: AppHandle, path: String) -> Result<(), String>
         cmd.args(["-t", &path]);
         cmd.output()
             .map_err(|e| format!("Failed to open text file: {}", e))?;
-        return Ok(());
+        Ok(())
     }
     #[cfg(target_os = "windows")]
     {
@@ -25,7 +25,7 @@ pub async fn open_text_file(_app: AppHandle, path: String) -> Result<(), String>
         cmd.arg(&path);
         cmd.output()
             .map_err(|e| format!("Failed to open text file: {}", e))?;
-        return Ok(());
+        Ok(())
     }
     #[cfg(target_os = "linux")]
     {
@@ -33,7 +33,7 @@ pub async fn open_text_file(_app: AppHandle, path: String) -> Result<(), String>
         cmd.arg(&path);
         cmd.output()
             .map_err(|e| format!("Failed to open text file: {}", e))?;
-        return Ok(());
+        Ok(())
     }
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     Err("Unsupported platform".to_string())
