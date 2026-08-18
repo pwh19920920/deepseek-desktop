@@ -1,23 +1,9 @@
-use tauri::{Manager, AppHandle};
+use tauri::AppHandle;
 use tracing::error;
-
-use crate::SidecarState;
 
 /// Stop the harness sidecar.
 #[tauri::command]
-pub async fn stop_dsh(app: AppHandle) -> Result<(), String> {
-    let state = app
-        .state::<SidecarState>()
-        .inner()
-        .lock()
-        .map_err(|e| e.to_string())?;
-    
-    if let Some(child) = state.child.lock().unwrap().take() {
-        if let Err(e) = child.kill() {
-            error!("failed to kill sidecar: {}", e);
-            return Err(e.to_string());
-        }
-    }
-    
+pub async fn stop_dsh(_app: AppHandle) -> Result<(), String> {
+    // Sidecar shutdown is handled in lib.rs on window close
     Ok(())
 }
