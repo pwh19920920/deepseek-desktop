@@ -5,10 +5,10 @@
   "description": "DeepSeek Harness Desktop - Tauri 2 app wrapping deepseek-harness",
   "license": "MIT",
   "scripts": {
-    "dev": "cd apps/desktop && pnpm dev",
-    "build": "node scripts/build.js",
-    "clean": "node scripts/clean.js",
-    "fetch-node": "node scripts/fetch-node.js",
-    "check": "cd apps/desktop/src-tauri && cargo check && cargo clippy -- -D warnings && cargo fmt --check"
-  }
+    "install": "node scripts/index.js install",
+    "build": "node scripts/index.js build",
+    "dev": "node scripts/index.js dev",
+    "clean": "node scripts/index.js clean"
+  },
+  "postinstall": "node scripts/fetch-node.js"
 }

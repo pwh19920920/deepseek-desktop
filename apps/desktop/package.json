@@ -16,6 +16,5 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"
-  },
-  "postinstall": "bash ../../scripts/fetch-node.sh"
+  }
 }
