@@ -1,5 +1,5 @@
-use tokio::sync::mpsc::Receiver;
 use tauri_plugin_shell::process::CommandEvent;
+use tokio::sync::mpsc::Receiver;
 
 const PORT_PATTERNS: &[&str] = &[
     r"listening on \S+:(\d+)",
@@ -24,9 +24,7 @@ pub fn extract_port(line: &str) -> anyhow::Result<Option<u16>> {
     Ok(None)
 }
 
-pub async fn discover_port(
-    cmd_events: &mut Receiver<CommandEvent>,
-) -> anyhow::Result<u16> {
+pub async fn discover_port(cmd_events: &mut Receiver<CommandEvent>) -> anyhow::Result<u16> {
     loop {
         match cmd_events.recv().await {
             Some(CommandEvent::Stdout(line)) => {
