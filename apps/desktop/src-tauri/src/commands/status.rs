@@ -1,5 +1,5 @@
-use tauri::{Manager, AppHandle};
 use serde::Serialize;
+use tauri::{AppHandle, Manager};
 
 use crate::SidecarState;
 
