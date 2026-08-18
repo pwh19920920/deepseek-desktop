@@ -33,3 +33,10 @@
 
 # Generated binaries
 /binaries/
+
+# Desktop app generated files
+apps/desktop/target/
+apps/desktop/node_modules/
+apps/desktop/.tmp/
+apps/desktop/src-tauri/binaries/
+apps/desktop/src-tauri/gen/
