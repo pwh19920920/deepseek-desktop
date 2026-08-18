@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use tauri::AppHandle;
-use tauri_plugin_shell::process::{CommandChild, CommandEvent};
+use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 use tracing::info;
 
