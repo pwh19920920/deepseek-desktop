@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use tauri_plugin_shell::process::CommandChild;
 
 pub mod port;
 pub mod shutdown;
@@ -8,7 +7,7 @@ pub mod spawn;
 /// Handle to a running harness sidecar process.
 pub struct SidecarHandle {
     pub port: u16,
-    pub child: CommandChild,
+    pub child: tauri_plugin_shell::process::CommandChild,
     pub dsh_path: PathBuf,
 }
 
@@ -19,8 +18,8 @@ impl SidecarHandle {
     }
 }
 
-pub use shutdown::shutdown_child;
 pub use spawn::spawn_sidecar;
+pub use shutdown::shutdown_child;
 
 #[cfg(test)]
 mod tests {
