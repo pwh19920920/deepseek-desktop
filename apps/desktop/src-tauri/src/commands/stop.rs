@@ -8,7 +8,8 @@ use crate::SidecarState;
 pub async fn stop_dsh(app: AppHandle) -> Result<(), String> {
     let state = app
         .state::<SidecarState>()
-        .get()
+        .inner()
+        .lock()
         .map_err(|e| e.to_string())?;
     
     if let Some(child) = state.child.lock().unwrap().take() {
