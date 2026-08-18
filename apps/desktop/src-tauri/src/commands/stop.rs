@@ -1,5 +1,5 @@
 use tauri::AppHandle;
-use tracing::error;
+// use tracing::error;
 
 /// Stop the harness sidecar.
 #[tauri::command]
