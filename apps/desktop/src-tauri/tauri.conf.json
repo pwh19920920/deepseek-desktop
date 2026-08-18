@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "identifier": "ai.deepseek.harness-desktop",
   "build": {
-    "frontendDist": "../dist",
+    "frontendDist": "../public",
     "devUrl": null,
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
