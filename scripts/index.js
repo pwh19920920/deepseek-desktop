@@ -10,7 +10,11 @@ const command = args[0];
 const commands = {
   install: () => {
     console.log('=== Installing dependencies ===');
-    execSync('pnpm install', { stdio: 'inherit' });
+    try {
+      execSync('pnpm install', { stdio: 'inherit' });
+    } catch (e) {
+      console.log('\n[warn] pnpm install had issues, continuing...');
+    }
     console.log('\n=== Fetching Node.js ===');
     execSync('node scripts/fetch-node.js', { stdio: 'inherit' });
     console.log('\n=== Install complete ===');
