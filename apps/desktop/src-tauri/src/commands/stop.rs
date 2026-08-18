@@ -1,4 +1,4 @@
-use tauri::Manager;
+use tauri::{Manager, AppHandle};
 use tracing::error;
 
 use crate::SidecarState;
