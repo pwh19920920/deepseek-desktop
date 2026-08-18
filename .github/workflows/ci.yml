@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: apps/desktop
+
+      - name: Run cargo check
+        run: cargo check
+        working-directory: apps/desktop/src-tauri
+
+      - name: Run cargo test
+        run: cargo test
+        working-directory: apps/desktop/src-tauri
+
+      - name: Run cargo clippy
+        run: cargo clippy -- -D warnings
+        working-directory: apps/desktop/src-tauri
+
+      - name: Run cargo fmt
+        run: cargo fmt --check
+        working-directory: apps/desktop/src-tauri

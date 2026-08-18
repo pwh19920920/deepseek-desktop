@@ -6,6 +6,7 @@ use tokio::runtime::Runtime;
 use tracing::{error, info};
 
 pub mod capabilities;
+pub mod commands;
 pub mod dsh;
 pub mod paths;
 
@@ -45,6 +46,11 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            // Core commands
+            commands::start::start_dsh,
+            commands::stop::stop_dsh,
+            commands::status::dsh_status,
+            // Native capabilities
             capabilities::file_picker::pick_directory,
             capabilities::file_picker::pick_file,
             capabilities::file_picker::list_directory,

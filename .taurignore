@@ -1,0 +1,18 @@
+# Ignore generated files
+target/
+apps/desktop/src-tauri/target/
+gen/
+apps/desktop/src-tauri/gen/
+
+# Ignore binary downloads
+binaries/
+apps/desktop/src-tauri/binaries/
+
+# Ignore temp files
+.tmp/
+apps/desktop/src-tauri/.tmp/
+
+# Ignore node_modules
+node_modules/
+apps/desktop/node_modules/
+apps/desktop/src-tauri/node_modules/
