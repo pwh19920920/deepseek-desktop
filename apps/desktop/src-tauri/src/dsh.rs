@@ -18,8 +18,8 @@ impl SidecarHandle {
     }
 }
 
-pub use spawn::spawn_sidecar;
 pub use shutdown::shutdown_child;
+pub use spawn::spawn_sidecar;
 
 #[cfg(test)]
 mod tests {
