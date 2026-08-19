@@ -80,7 +80,12 @@ jobs:
         with:
           name: dist-${{ matrix.target }}
           path: |
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.msi
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.exe
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.deb
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.rpm
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.AppImage
 
   publish:
     needs: release
