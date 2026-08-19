@@ -7,6 +7,10 @@
 </p>
 
 <p align="center">
+  <a href="README.en.md">🌐 English</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/Nonnetta/deepseek-desktop/releases">
     <img src="https://img.shields.io/github/v/release/Nonnetta/deepseek-desktop?color=7c4dff&label=release" alt="Release">
   </a>
