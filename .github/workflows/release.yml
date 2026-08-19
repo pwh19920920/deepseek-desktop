@@ -102,8 +102,12 @@ jobs:
         with:
           path: artifacts
 
+      - name: Flatten artifacts for upload
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.rpm" -o -name "*-setup.exe" \) -exec cp -v {} release-assets/ \;
+
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            artifacts/**/*
+          files: release-assets/*
