@@ -35,12 +35,12 @@ for (const plat of targetsToFetch) {
   execSync('node "' + path.join(__dirname, 'fetch-node.js') + '" ' + triple, { stdio: 'inherit' });
 }
 
-// Build frontend with Vite (in apps/desktop context)
+// Build frontend with Vite
 console.log('\n=== Building frontend ===');
-execSync('pnpm --filter @dsh/desktop exec vite build', { stdio: 'inherit' });
+execSync('pnpm --filter dsh-app-desktop exec vite build', { stdio: 'inherit' });
 
 // Build for each target
-process.chdir('apps/desktop');
+process.chdir('dsh-app-desktop');
 let targets = [];
 if (platform === 'all') {
   targets = Object.values(PLATFORM_TARGET).map(t => `--target ${t}`);

@@ -6,8 +6,8 @@ const path = require('path');
 
 console.log('=== Installing dependencies ===');
 
-// Change to apps/desktop directory for pnpm install
-const desktopDir = path.join(__dirname, '..', 'apps', 'desktop');
+// Change to dsh-app-desktop directory for pnpm install
+const desktopDir = path.join(__dirname, '..', 'dsh-app-desktop');
 const originalCwd = process.cwd();
 
 try {

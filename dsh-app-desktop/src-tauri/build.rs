@@ -72,7 +72,7 @@ fn copy_dsh_source() {
 
 /// Copy packages from the pnpm virtual store into resources/dsh/node_modules/.
 fn copy_dsh_node_modules() {
-    let pnpm_store = PathBuf::from("../../../node_modules/.pnpm");
+    let pnpm_store = PathBuf::from("../../node_modules/.pnpm");
     let target = PathBuf::from("resources/dsh/node_modules");
 
     if !pnpm_store.exists() {

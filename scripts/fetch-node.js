@@ -15,7 +15,7 @@ const { execSync } = require('child_process');
  *   node scripts/fetch-node.js x86_64-pc-windows-msvc
  *   node scripts/fetch-node.js x86_64-unknown-linux-gnu
  *
- * Downloads to: apps/desktop/src-tauri/binaries/node-{target}
+ * Downloads to: dsh-app-desktop/src-tauri/binaries/node-{target}
  */
 
 const NODE_VERSION = 'v24.9.0';
@@ -108,7 +108,7 @@ async function main() {
   }
 
   const baseUrl = `https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-${distro}${ext}`;
-  const binariesDir = path.join(__dirname, '..', 'apps', 'desktop', 'src-tauri', 'binaries');
+  const binariesDir = path.join(__dirname, '..', 'dsh-app-desktop', 'src-tauri', 'binaries');
   const tarFile = path.join(binariesDir, `node-${NODE_VERSION}-${distro}${ext}`);
   const outputName = `node-${input}`;
   const outputFile = path.join(binariesDir, outputName);

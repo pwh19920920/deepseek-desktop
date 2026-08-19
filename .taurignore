@@ -1,18 +1,18 @@
 # Ignore generated files
 target/
-apps/desktop/src-tauri/target/
+dsh-app-desktop/src-tauri/target/
 gen/
-apps/desktop/src-tauri/gen/
+dsh-app-desktop/src-tauri/gen/
 
 # Ignore binary downloads
 binaries/
-apps/desktop/src-tauri/binaries/
+dsh-app-desktop/src-tauri/binaries/
 
 # Ignore temp files
 .tmp/
-apps/desktop/src-tauri/.tmp/
+dsh-app-desktop/src-tauri/.tmp/
 
 # Ignore node_modules
 node_modules/
-apps/desktop/node_modules/
-apps/desktop/src-tauri/node_modules/
+dsh-app-desktop/node_modules/
+dsh-app-desktop/src-tauri/node_modules/

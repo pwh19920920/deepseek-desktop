@@ -6,12 +6,12 @@ const fs = require('fs');
 console.log('=== Cleaning ===');
 
 const dirs = [
-  'apps/desktop/src-tauri/target',
-  'apps/desktop/src-tauri/gen',
-  'apps/desktop/src-tauri/resources',
-  'apps/desktop/src-tauri/binaries',
-  'apps/desktop/dist',
-  'apps/desktop/node_modules',
+  'dsh-app-desktop/src-tauri/target',
+  'dsh-app-desktop/src-tauri/gen',
+  'dsh-app-desktop/src-tauri/resources',
+  'dsh-app-desktop/src-tauri/binaries',
+  'dsh-app-desktop/dist',
+  'dsh-app-desktop/node_modules',
   'resources/dsh',
   'node_modules',
   '.tmp',
