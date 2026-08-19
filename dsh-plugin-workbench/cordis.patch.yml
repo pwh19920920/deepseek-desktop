@@ -1,0 +1,4 @@
+# dsh-plugin-workbench bundle patch: inserts this plugin into a profile's layer stack.
+- insert:
+    - id: dsh-plugin-workbench
+      name: 'dsh-plugin-workbench'

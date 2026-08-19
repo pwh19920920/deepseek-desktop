@@ -1,0 +1,67 @@
+{
+  "name": "dsh-plugin-workbench",
+  "version": "0.1.0",
+  "description": "DSH 右侧多标签任务栏插件 — 结果与证据、浏览器、文件、产物、Site",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "deepseek",
+    "harness",
+    "dsh",
+    "dsh-plugin",
+    "workbench",
+    "details-panel"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-theme"
+      ],
+      "platform": "web"
+    }
+  },
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "client",
+    "lib",
+    "cordis.patch.yml",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.0-rc.6",
+    "@types/react": "^18",
+    "esbuild": "^0.25",
+    "react": "^18",
+    "react-dom": "^18",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "react": "^18"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": false
+    },
+    "react": {
+      "optional": false
+    }
+  }
+}
