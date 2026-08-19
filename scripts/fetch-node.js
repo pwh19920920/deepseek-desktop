@@ -79,7 +79,12 @@ function extractTarGz(tarFile, destDir) {
 }
 
 function extractZip(zipFile, destDir) {
-  execSync(`unzip -qo "${zipFile}" -d "${destDir}"`, { stdio: 'inherit' });
+  // Use tar on Windows (built-in), unzip on macOS/Linux
+  try {
+    execSync(`tar -xf "${zipFile}" -C "${destDir}"`, { stdio: 'pipe' });
+  } catch {
+    execSync(`unzip -qo "${zipFile}" -d "${destDir}"`, { stdio: 'pipe' });
+  }
 }
 
 function extractTarXz(tarFile, destDir) {
@@ -110,7 +115,7 @@ async function main() {
   const baseUrl = `https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-${distro}${ext}`;
   const binariesDir = path.join(__dirname, '..', 'dsh-app-desktop', 'src-tauri', 'binaries');
   const tarFile = path.join(binariesDir, `node-${NODE_VERSION}-${distro}${ext}`);
-  const outputName = `node-${input}`;
+  const outputName = `node-${input}${input.includes('windows') ? '.exe' : ''}`;
   const outputFile = path.join(binariesDir, outputName);
 
   fs.mkdirSync(binariesDir, { recursive: true });
@@ -169,7 +174,11 @@ async function main() {
   if (!nodeBinary) {
     // List what we got for debugging
     console.error('Extracted contents:');
-    console.log(execSync(`find "${tmpDir}" -type f`, { encoding: 'utf-8' }));
+    try {
+      execSync(`find "${tmpDir}" -type f`, { encoding: 'utf-8' });
+    } catch {
+      execSync(`dir /s /b "${tmpDir}"`, { encoding: 'utf-8' });
+    }
     throw new Error('Could not find node binary in archive');
   }
 
