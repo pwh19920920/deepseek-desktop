@@ -51,7 +51,7 @@ jobs:
         run: node scripts/fetch-node.js ${{ matrix.target }}
 
       - name: Build frontend
-        run: pnpm --filter @dsh/desktop exec vite build
+        run: pnpm --filter dsh-app-desktop exec vite build
 
       - name: Install Tauri system dependencies (Linux)
         if: runner.os == 'Linux'
@@ -79,7 +79,8 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: dist-${{ matrix.target }}
-          path: dsh-app-desktop/src-tauri/releases/
+          path: |
+            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*
 
   publish:
     needs: release
