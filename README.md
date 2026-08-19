@@ -37,10 +37,11 @@ DeepSeek Harness Desktop 是一个 **Tauri 2** 桌面应用，将 DeepSeek 官�
 2. **跨平台** — 支持 macOS (ARM64/x64)、Windows (x64) 和 Linux (x64/ARM64)
 3. **官方 dsh 内核** — 直接使用 `@deepseek-ai/dsh` npm 包作为依赖，版本管理透明，`pnpm update` 即可升级
 4. **自包含** — 构建时自动下载对应平台的便携 Node.js 二进制，拷贝并裁剪 dsh 依赖，最终产物开箱即用，用户无需安装任何运行时
-5. **构建优化** — 自动移除 `typescript`、`vite`、`esbuild` 等构建时依赖，只保留当前平台的 `node-pty` prebuild，减少包体积
-6. **原生 OS 集成** — 通过 Tauri 插件提供系统通知、文件对话框、默认程序打开文件等能力
-7. **优雅的启动体验** — 启动时展示加载动画，实时推送 `loading → ready / error` 状态
-8. **干净关闭** — 窗口关闭时自动终止 dsh 侧边进程，无残留
+5. **插件市场内置** — 预装 [dsh-market](https://github.com/dsh-market/dsh-market)，用户可在 **Settings → Plugin Market** 中浏览、搜索、一键安装社区插件，无需额外配置
+6. **构建优化** — 自动移除 `typescript`、`vite`、`esbuild` 等构建时依赖，只保留当前平台的 `node-pty` prebuild，减少包体积
+7. **原生 OS 集成** — 通过 Tauri 插件提供系统通知、文件对话框、默认程序打开文件等能力
+8. **优雅的启动体验** — 启动时展示加载动画，实时推送 `loading → ready / error` 状态
+9. **干净关闭** — 窗口关闭时自动终止 dsh 侧边进程，无残留
 
 ---
 
@@ -109,7 +110,7 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
 > **⚠️ macOS 注意：** 由于未使用 Apple Developer 账号签名，macOS Gatekeeper 可能会提示"已损坏"。
 > 安装后运行以下命令即可解决：
 > ```bash
-> sudo xattr -rd com.apple.quarantine /Applications/DeepSeek\ Harness\ Desktop.app
+> sudo xattr -rd com.apple.quarantine /Applications/DeepSeek\ Harness.app
 > ```
 
 ### Windows
@@ -150,7 +151,7 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
 
 ### 工作流程
 
-1. **启动时**：Rust 后端通过 `tauri-plugin-shell` 启动 Node.js 侧边进程，运行 `dsh web --port 0`
+1. **启动时**：Rust 后端自动配置 dsh profile（预装 dshmarket），然后通过 `tauri-plugin-shell` 启动 Node.js 侧边进程，运行 `dsh web --port 0`
 2. **端口发现**：从侧边进程 stdout 使用正则匹配动态分配的端口号（支持多种输出格式）
 3. **加载 UI**：WebView 导航到 `http://127.0.0.1:<port>` 加载 dsh 网页界面
 4. **状态管理**：通过 Tauri 事件系统向前端实时推送 `loading → ready / error` 状态
@@ -180,7 +181,7 @@ dsh-desktop/
 │   ├── clean.js              # 清理脚本
 │   └── fetch-node.js         # 下载便携 Node.js
 ├── dsh-app-desktop/
-│   ├── package.json          # dsh-app-desktop 子项目
+│   ├── package.json          # dsh-app-desktop 子项目（含 dshmarket 依赖）
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   ├── index.html            # 启动加载页（SSR 前展示）
@@ -194,13 +195,13 @@ dsh-desktop/
 │       ├── tauri.conf.json
 │       ├── binaries/         # 便携 Node.js (自动下载)
 │       ├── resources/
-│       │   └── dsh/          # dsh 内核 + 依赖 (自动拷贝)
+│       │   └── dsh/          # dsh 内核 + 依赖 (自动拷贝，含 dshmarket)
 │       ├── capabilities/     # Tauri 权限配置
 │       └── src/
 │           ├── main.rs
-│           ├── lib.rs        # 应用入口 + 侧边进程编排
+│           ├── lib.rs        # 应用入口 + 侧边进程编排 + dshmarket 自动配置
 │           ├── error.rs      # 错误类型定义
-│           ├── paths.rs      # dsh 路径解析（多级 fallback）
+│           ├── paths.rs      # dsh 路径解析（多级 fallback，支持 _up_ 布局）
 │           ├── dsh/          # dsh 生命周期管理
 │           │   ├── mod.rs    # SidecarHandle 定义 + 单元测试
 │           │   ├── port.rs   # 端口发现（多正则匹配）
@@ -252,7 +253,7 @@ pnpm build all
 构建过程中 `build.rs` 会自动执行以下优化，减小最终包体积：
 
 1. **dsh 源码拷贝** — 从 `node_modules/@deepseek-ai/dsh` 拷贝到 `dsh-app-desktop/resources/dsh/`
-2. **依赖拷贝** — 从 pnpm 虚拟存储拷贝运行所需依赖
+2. **依赖拷贝** — 从 pnpm 虚拟存储拷贝运行所需依赖（含 dshmarket）
 3. **依赖裁剪** — 移除 `typescript`、`vite`、`esbuild`、`rollup` 等构建时依赖
 4. **平台预编译清理** — 只保留当前平台 `node-pty` 的 prebuild 文件
 5. **文档清理** — 移除 `CHANGELOG.md`、`CONTRIBUTING.md` 等无用文件
@@ -278,8 +279,20 @@ pnpm install
 dsh 的版本声明在 `dsh-app-desktop/package.json` 的 `dependencies` 中：
 
 ```json
-"@deepseek-ai/dsh": "^0.1.0-rc.5"
+"@deepseek-ai/dsh": "^0.1.0-rc.7"
 ```
+
+## 插件市场
+
+本应用预装了 [dsh-market](https://github.com/dsh-market/dsh-market)，启动后进入 **Settings → Plugin Market** 即可：
+
+- **浏览 & 搜索** — 1,250+ 社区插件，支持分类筛选和关键词搜索
+- **一键安装** — 点一下即可安装，实时进度显示
+- **更新管理** — 逐个或批量更新插件，插件市场自身也能自更新
+- **热开关** — 无需重启即可启用/禁用插件
+- **备份恢复** — 支持 JSON 导出/导入、WebDAV 自动备份、GitHub Gist 同步
+
+插件市场在首次启动时自动配置，用户无需任何额外操作。
 
 ## 清理
 

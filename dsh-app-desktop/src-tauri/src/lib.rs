@@ -11,6 +11,223 @@ pub mod commands;
 pub mod dsh;
 pub mod paths;
 
+/// Profile patch template (mirrors dsh-app-boot's PROFILE_PATCH_TEMPLATE).
+const PROFILE_PATCH_TEMPLATE: &str = r#"# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+[]
+"#;
+
+/// Profile pnpm workspace config (mirrors dsh-app-boot's PROFILE_PNPM_WORKSPACE).
+const PROFILE_PNPM_WORKSPACE: &str = "packages:
+  - .
+
+nodeLinker: hoisted
+autoInstallPeers: false
+";
+
+/// Ensure the web profile includes dshmarket in its dependencies and bundles.
+/// Creates the profile directory on first run; upgrades existing profiles.
+fn ensure_dshmarket_in_profile(app: &tauri::App) {
+    let dsh_home = std::env::var("DSH_HOME").unwrap_or_else(|_| {
+        app.path()
+            .home_dir()
+            .unwrap_or_default()
+            .join(".dsh")
+            .to_string_lossy()
+            .to_string()
+    });
+    let profile_dir = PathBuf::from(dsh_home).join("profiles").join("web");
+    let pkg_path = profile_dir.join("package.json");
+
+    // Resolve the bundled dshmarket path (from app resources, or dev node_modules)
+    let bundled_dshmarket = resolve_bundled_dshmarket(app);
+
+    if !pkg_path.exists() {
+        // First run: create the profile directory with dshmarket pre-configured.
+        std::fs::create_dir_all(&profile_dir).unwrap_or_else(|e| {
+            error!("failed to create profile directory {:?}: {}", profile_dir, e);
+        });
+        let pkg = serde_json::json!({
+            "name": "dsh-profile-web",
+            "private": true,
+            "dependencies": {
+                "dshmarket": "*"
+            },
+            "dsh": {
+                "profile": {
+                    "bundles": [
+                        "@deepseek-ai/dsh-base",
+                        "@deepseek-ai/dsh-web-app",
+                        "dshmarket"
+                    ]
+                }
+            }
+        });
+        std::fs::write(&pkg_path, serde_json::to_string_pretty(&pkg).unwrap()).unwrap_or_else(|e| {
+            error!("failed to write profile package.json: {}", e);
+        });
+        std::fs::write(profile_dir.join("cordis.patch.yml"), PROFILE_PATCH_TEMPLATE).ok();
+        std::fs::write(profile_dir.join("pnpm-workspace.yaml"), PROFILE_PNPM_WORKSPACE).ok();
+        // Create symlink so the Cordis Loader can import dshmarket from the profile
+        symlink_dshmarket(&profile_dir, &bundled_dshmarket);
+        info!("dshmarket pre-configured in new profile at {:?}", profile_dir);
+        return;
+    }
+
+    // Upgrade existing profile: add dshmarket if missing.
+    let content = match std::fs::read_to_string(&pkg_path) {
+        Ok(c) => c,
+        Err(e) => {
+            error!("failed to read profile package.json: {}", e);
+            return;
+        }
+    };
+    let mut pkg: serde_json::Value = match serde_json::from_str(&content) {
+        Ok(v) => v,
+        Err(e) => {
+            error!("failed to parse profile package.json: {}", e);
+            return;
+        }
+    };
+
+    // Already has dshmarket?
+    if pkg.get("dependencies").and_then(|d| d.get("dshmarket")).is_some() {
+        // Ensure symlink exists even if profile was already set up
+        symlink_dshmarket(&profile_dir, &bundled_dshmarket);
+        return;
+    }
+
+    // Add dshmarket to dependencies
+    if let Some(deps) = pkg.get_mut("dependencies").and_then(|d| d.as_object_mut()) {
+        deps.insert("dshmarket".into(), serde_json::json!("*"));
+    } else {
+        pkg["dependencies"] = serde_json::json!({"dshmarket": "*"});
+    }
+
+    // Add dshmarket to bundles
+    if let Some(bundles) = pkg
+        .pointer_mut("/dsh/profile/bundles")
+        .and_then(|b| b.as_array_mut())
+    {
+        if !bundles.iter().any(|b| b == "dshmarket") {
+            bundles.push(serde_json::json!("dshmarket"));
+        }
+    } else {
+        let profile = pkg
+            .pointer_mut("/dsh/profile")
+            .and_then(|p| p.as_object_mut());
+        if profile.is_none() {
+            pkg["dsh"] = serde_json::json!({
+                "profile": {
+                    "bundles": ["dshmarket"]
+                }
+            });
+        } else {
+            pkg["dsh"]["profile"]["bundles"] = serde_json::json!(["dshmarket"]);
+        }
+    }
+
+    std::fs::write(&pkg_path, serde_json::to_string_pretty(&pkg).unwrap()).unwrap_or_else(|e| {
+        error!("failed to write updated profile package.json: {}", e);
+    });
+    // Create symlink so the Cordis Loader can import dshmarket from the profile
+    symlink_dshmarket(&profile_dir, &bundled_dshmarket);
+    info!("dshmarket added to existing profile at {:?}", profile_dir);
+}
+
+/// Resolve the path to the bundled dshmarket package, checking multiple locations.
+fn resolve_bundled_dshmarket(app: &tauri::App) -> Option<PathBuf> {
+    // 1. Bundled in app resources: {resource_dir}/resources/dsh/node_modules/dshmarket/
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        let bundled = resource_dir
+            .join("resources")
+            .join("dsh")
+            .join("node_modules")
+            .join("dshmarket");
+        if bundled.join("package.json").exists() {
+            return Some(bundled);
+        }
+        // 2. Tauri 2 _up_ layout: {resource_dir}/_up_/resources/dsh/node_modules/dshmarket/
+        let bundled_up = resource_dir
+            .join("_up_")
+            .join("resources")
+            .join("dsh")
+            .join("node_modules")
+            .join("dshmarket");
+        if bundled_up.join("package.json").exists() {
+            return Some(bundled_up);
+        }
+    }
+    // 3. Development: in dsh-app-desktop node_modules
+    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("node_modules")
+        .join("dshmarket");
+    if dev.join("package.json").exists() {
+        return Some(dev);
+    }
+    // 4. Root workspace node_modules
+    let ws = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../node_modules/dshmarket");
+    if ws.join("package.json").exists() {
+        return Some(ws);
+    }
+    None
+}
+
+/// Create a symlink from the profile's node_modules to the bundled dshmarket.
+/// If the symlink already exists and points to a valid dshmarket package, it
+/// is left untouched — this allows install.js to manage the version.  Only
+/// creates or repairs the symlink when it is missing or broken.
+fn symlink_dshmarket(profile_dir: &PathBuf, bundled_dshmarket: &Option<PathBuf>) {
+    let Some(src) = bundled_dshmarket else {
+        error!("dshmarket not found in bundled resources, skipping symlink");
+        return;
+    };
+    let link_path = profile_dir.join("node_modules").join("dshmarket");
+
+    // If the symlink already exists and points to a valid dshmarket, leave it.
+    if let Ok(meta) = std::fs::symlink_metadata(&link_path) {
+        if meta.file_type().is_symlink() {
+            let target = std::fs::read_link(&link_path).unwrap_or_default();
+            let target_pkg = target.join("package.json");
+            if target_pkg.exists() {
+                return; // existing symlink is valid
+            }
+            // broken symlink — remove it
+            let _ = std::fs::remove_file(&link_path);
+        } else {
+            // Not a symlink — remove it
+            let _ = std::fs::remove_dir_all(&link_path);
+        }
+    }
+
+    std::fs::create_dir_all(profile_dir.join("node_modules")).ok();
+    #[cfg(target_os = "windows")]
+    {
+        std::os::windows::fs::symlink_dir(&canonicalize_path(src), &link_path).ok();
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        std::os::unix::fs::symlink(&canonicalize_path(src), &link_path).ok();
+    }
+    if link_path.exists() || link_path.is_symlink() {
+        info!("symlinked dshmarket into profile node_modules");
+    } else {
+        error!("failed to symlink dshmarket into profile node_modules");
+    }
+}
+
+/// Canonicalize a path for symlink creation, handling relative paths.
+fn canonicalize_path(path: &PathBuf) -> PathBuf {
+    if path.is_absolute() {
+        path.clone()
+    } else {
+        std::fs::canonicalize(path).unwrap_or_else(|_| path.clone())
+    }
+}
+
 /// Handle to the running harness sidecar, stored in Tauri state.
 #[derive(Clone)]
 pub struct SidecarState {
@@ -110,6 +327,10 @@ pub fn run() {
                     }
                 }
             });
+
+            // Ensure the web profile has dshmarket configured before starting dsh.
+            // This runs on every launch but is a no-op after the first setup.
+            ensure_dshmarket_in_profile(app);
 
             let app_for_sidecar = app.handle().clone();
             std::thread::spawn(move || {

@@ -9,3 +9,5 @@ allowBuilds:
   node-pty: set this to true or false
   protobufjs: set this to true or false
 ignoreScripts: true
+minimumReleaseAgeExclude:
+  - dshmarket@1.14.1
