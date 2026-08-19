@@ -80,3 +80,22 @@ jobs:
         with:
           name: dist-${{ matrix.target }}
           path: dsh-app-desktop/src-tauri/releases/
+
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/**/*
