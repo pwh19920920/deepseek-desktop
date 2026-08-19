@@ -180,7 +180,7 @@ fn resolve_bundled_dshmarket(app: &tauri::App) -> Option<PathBuf> {
 /// If the symlink already exists and points to a valid dshmarket package, it
 /// is left untouched — this allows install.js to manage the version.  Only
 /// creates or repairs the symlink when it is missing or broken.
-fn symlink_dshmarket(profile_dir: &PathBuf, bundled_dshmarket: &Option<PathBuf>) {
+fn symlink_dshmarket(profile_dir: &Path, bundled_dshmarket: &Option<PathBuf>) {
     let Some(src) = bundled_dshmarket else {
         error!("dshmarket not found in bundled resources, skipping symlink");
         return;
@@ -210,7 +210,7 @@ fn symlink_dshmarket(profile_dir: &PathBuf, bundled_dshmarket: &Option<PathBuf>)
     }
     #[cfg(not(target_os = "windows"))]
     {
-        std::os::unix::fs::symlink(&canonicalize_path(src), &link_path).ok();
+        std::os::unix::fs::symlink(canonicalize_path(src), &link_path).ok();
     }
     if link_path.exists() || link_path.is_symlink() {
         info!("symlinked dshmarket into profile node_modules");
