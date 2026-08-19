@@ -39,7 +39,7 @@
       "binaries/node"
     ],
     "resources": [
-      "resources/dsh"
+      "../resources/dsh"
     ]
   }
 }

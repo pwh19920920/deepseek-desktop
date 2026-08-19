@@ -12,16 +12,16 @@ pub fn resolve_dsh_path(app_resource_dir: Option<PathBuf>) -> anyhow::Result<Pat
             return Ok(bundled);
         }
     }
-    let local = PathBuf::from("resources/dsh/lib/bin.js");
+    let local = PathBuf::from("../resources/dsh/lib/bin.js");
     if local.exists() {
         return Ok(local);
     }
-    let node_modules = PathBuf::from("node_modules/@deepseek-ai/dsh/lib/bin.js");
+    let node_modules = PathBuf::from("../node_modules/@deepseek-ai/dsh/lib/bin.js");
     if node_modules.exists() {
         return Ok(node_modules);
     }
     anyhow::bail!(
-        "dsh not found. Searched:\n  - bundled resource ({:?}/resources/dsh/lib/bin.js)\n  - resources/dsh/lib/bin.js\n  - node_modules/@deepseek-ai/dsh/lib/bin.js",
+        "dsh not found. Searched:\n  - bundled resource ({:?}/resources/dsh/lib/bin.js)\n  - ../resources/dsh/lib/bin.js\n  - ../node_modules/@deepseek-ai/dsh/lib/bin.js",
         app_resource_dir.as_ref().map(|d| d.display().to_string()).unwrap_or_default()
     )
 }

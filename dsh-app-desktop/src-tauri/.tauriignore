@@ -1,0 +1,3 @@
+# Ignore bundled dsh node_modules — these are large and trigger
+# infinite rebuild loops when cargo compilation touches them.
+resources/dsh/node_modules

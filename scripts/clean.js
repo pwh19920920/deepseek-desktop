@@ -8,11 +8,10 @@ console.log('=== Cleaning ===');
 const dirs = [
   'dsh-app-desktop/src-tauri/target',
   'dsh-app-desktop/src-tauri/gen',
-  'dsh-app-desktop/src-tauri/resources',
+  'dsh-app-desktop/resources',
   'dsh-app-desktop/src-tauri/binaries',
   'dsh-app-desktop/dist',
   'dsh-app-desktop/node_modules',
-  'resources/dsh',
   'node_modules',
   '.tmp',
 ];

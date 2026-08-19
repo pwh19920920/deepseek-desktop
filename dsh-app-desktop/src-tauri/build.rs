@@ -13,11 +13,11 @@ fn main() {
     tauri_build::build()
 }
 
-/// Copy the dsh kernel source from node_modules into resources/dsh/.
+/// Copy the dsh kernel source from node_modules into ../resources/dsh/.
 /// Skips the node_modules/ subdirectory — that's handled by copy_dsh_node_modules().
 fn copy_dsh_source() {
     let src = PathBuf::from("../node_modules/@deepseek-ai/dsh");
-    let dest = PathBuf::from("resources/dsh");
+    let dest = PathBuf::from("../resources/dsh");
 
     if !src.exists() {
         eprintln!(
@@ -70,10 +70,10 @@ fn copy_dsh_source() {
     eprintln!("[deepseek-desktop] dsh source copied to {:?}", dest);
 }
 
-/// Copy packages from the pnpm virtual store into resources/dsh/node_modules/.
+/// Copy packages from the pnpm virtual store into ../resources/dsh/node_modules/.
 fn copy_dsh_node_modules() {
     let pnpm_store = PathBuf::from("../../node_modules/.pnpm");
-    let target = PathBuf::from("resources/dsh/node_modules");
+    let target = PathBuf::from("../resources/dsh/node_modules");
 
     if !pnpm_store.exists() {
         eprintln!(
@@ -85,7 +85,7 @@ fn copy_dsh_node_modules() {
 
     if target.join("dsh").exists() || target.join(".package-lock.json").exists() {
         eprintln!(
-            "[deepseek-desktop] resources/dsh/node_modules/ already populated, skipping copy."
+            "[deepseek-desktop] ../resources/dsh/node_modules/ already populated, skipping copy."
         );
         return;
     }
@@ -183,7 +183,7 @@ fn copy_dsh_node_modules() {
     }
 
     eprintln!(
-        "[deepseek-desktop] copied {} packages into resources/dsh/node_modules/",
+        "[deepseek-desktop] copied {} packages into ../resources/dsh/node_modules/",
         copied
     );
 }
@@ -191,7 +191,7 @@ fn copy_dsh_node_modules() {
 /// Remove dev-only packages and strip unnecessary platform binaries from the
 /// bundled node_modules to reduce bundle size.
 fn prune_dsh_node_modules() {
-    let nm = PathBuf::from("resources/dsh/node_modules");
+    let nm = PathBuf::from("../resources/dsh/node_modules");
     if !nm.exists() {
         return;
     }

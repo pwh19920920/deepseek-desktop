@@ -251,7 +251,7 @@ pnpm build all
 
 构建过程中 `build.rs` 会自动执行以下优化，减小最终包体积：
 
-1. **dsh 源码拷贝** — 从 `node_modules/@deepseek-ai/dsh` 拷贝到 `resources/dsh/`
+1. **dsh 源码拷贝** — 从 `node_modules/@deepseek-ai/dsh` 拷贝到 `dsh-app-desktop/resources/dsh/`
 2. **依赖拷贝** — 从 pnpm 虚拟存储拷贝运行所需依赖
 3. **依赖裁剪** — 移除 `typescript`、`vite`、`esbuild`、`rollup` 等构建时依赖
 4. **平台预编译清理** — 只保留当前平台 `node-pty` 的 prebuild 文件
@@ -296,7 +296,7 @@ pnpm clean
 | `dsh-app-desktop/dist/` | Vite 前端构建产物 |
 | `dsh-app-desktop/src-tauri/target/` | Rust 编译产物 |
 | `dsh-app-desktop/src-tauri/gen/` | Tauri 代码生成 |
-| `dsh-app-desktop/src-tauri/resources/dsh/` | dsh 资源拷贝 |
+| `dsh-app-desktop/resources/dsh/` | dsh 资源拷贝 |
 | `dsh-app-desktop/src-tauri/binaries/` | 下载的 Node.js |
 | `.tmp/` | 临时文件 |
 

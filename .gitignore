@@ -21,7 +21,7 @@
 # Tauri generated
 /gen/
 /resources/dsh/
-
+dsh-app-desktop/resources/dsh/
 # macOS
 .DS_Store
 
