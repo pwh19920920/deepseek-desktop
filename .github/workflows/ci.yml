@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -45,6 +46,9 @@ jobs:
             libsoup-3.0-dev \
             build-essential \
             libssl-dev
+
+      - name: Fetch Node.js binary
+        run: node scripts/fetch-node.js
 
       - name: Run cargo check
         run: cargo check
