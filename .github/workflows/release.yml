@@ -75,19 +75,18 @@ jobs:
         run: pnpm tauri build ${{ matrix.args }}
         working-directory: dsh-app-desktop
 
+      - name: Collect installer files
+        run: |
+          mkdir -p dist
+          find dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle -type f \( \
+            -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.rpm" -o -name "*-setup.exe" \
+          \) -exec cp -v {} dist/ \;
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
           name: dist-${{ matrix.target }}
-          path: |
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.msi
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.deb
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.rpm
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.AppImage
-            # Windows: include the setup exe but exclude system dependencies
-            dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*-setup.exe
-            !**/OpenConsole.exe
+          path: dist/*
 
   publish:
     needs: release
@@ -102,10 +101,10 @@ jobs:
         with:
           path: artifacts
 
-      - name: Flatten artifacts for upload
+      - name: Flatten artifacts
         run: |
           mkdir -p release-assets
-          find artifacts -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.rpm" -o -name "*-setup.exe" \) -exec cp -v {} release-assets/ \;
+          find artifacts -type f -exec cp -v {} release-assets/ \;
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
