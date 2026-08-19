@@ -76,11 +76,10 @@ jobs:
         working-directory: dsh-app-desktop
 
       - name: Collect installer files
+        shell: bash
         run: |
           mkdir -p dist
-          find dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle -type f \( \
-            -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.rpm" -o -name "*-setup.exe" \
-          \) -exec cp -v {} dist/ \;
+          find "dsh-app-desktop/src-tauri/target/${{ matrix.target }}/release/bundle" -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.rpm" -o -name "*-setup.exe" \) -exec cp -v {} dist/ \;
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7.0.1
