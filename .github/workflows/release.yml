@@ -55,10 +55,10 @@ jobs:
 
       - name: Build
         run: pnpm tauri build ${{ matrix.args }}
-        working-directory: apps/desktop
+        working-directory: dsh-app-desktop
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.target }}
-          path: apps/desktop/src-tauri/releases/
+          path: dsh-app-desktop/src-tauri/releases/
