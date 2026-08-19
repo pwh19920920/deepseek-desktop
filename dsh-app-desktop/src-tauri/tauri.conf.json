@@ -10,6 +10,11 @@
   },
   "app": {
     "withGlobalTauri": true,
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "tooltip": "DeepSeek Harness Desktop"
+    },
     "windows": [
       {
         "label": "main",
@@ -28,7 +33,7 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/icon.png"
+      "icons/dock-icon.png"
     ],
     "externalBin": [
       "binaries/node"

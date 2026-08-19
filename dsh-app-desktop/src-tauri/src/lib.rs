@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use tauri::{Emitter, Manager};
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
 use tauri_plugin_shell::process::CommandChild;
 use tokio::runtime::Runtime;
 use tracing::{error, info};
@@ -79,45 +79,37 @@ pub fn run() {
                 .separator()
                 .item(&quit_item)
                 .build()?;
-            let icon = {
-                let img = image::load_from_memory(include_bytes!("../icons/icon.png"))
-                    .expect("failed to decode tray icon")
-                    .into_rgba8();
-                let (width, height) = img.dimensions();
-                tauri::image::Image::new_owned(img.into_raw(), width, height)
-            };
 
-            TrayIconBuilder::new()
-                .icon(icon)
-                .tooltip("DeepSeek Harness Desktop")
-                .menu(&menu)
-                .on_menu_event(|app, event| {
-                    match event.id().as_ref() {
-                        "show" => {
-                            if let Some(window) = app.get_webview_window("main") {
-                                let _ = window.show();
-                                let _ = window.set_focus();
-                            }
-                        }
-                        "quit" => {
-                            app.exit(0);
-                        }
-                        _ => {}
-                    }
-                })
-                .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click {
-                        button: MouseButton::Left,
-                        button_state: MouseButtonState::Up,
-                        ..
-                    } = event {
-                        if let Some(window) = tray.app_handle().get_webview_window("main") {
+            // 获取 Tauri 从配置自动创建的托盘图标，添加菜单和事件
+            let tray = app.handle().tray_by_id("main")
+                .expect("tray icon should be created from config");
+            tray.set_menu(Some(menu))?;
+            tray.on_menu_event(|app, event| {
+                match event.id().as_ref() {
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
                         }
                     }
-                })
-                .build(app)?;
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                }
+            });
+            tray.on_tray_icon_event(|tray, event| {
+                if let TrayIconEvent::Click {
+                    button: MouseButton::Left,
+                    button_state: MouseButtonState::Up,
+                    ..
+                } = event {
+                    if let Some(window) = tray.app_handle().get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+            });
 
             let app_for_sidecar = app.handle().clone();
             std::thread::spawn(move || {
