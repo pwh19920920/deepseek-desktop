@@ -198,13 +198,7 @@ fn prune_dsh_node_modules() {
 
     // Packages that are definitely build-only and not needed at runtime.
     // Note: @babel is kept because cordis-plugin-hmr needs @babel/code-frame.
-    let removable = [
-        "typescript",
-        "@esbuild",
-        "vite",
-        "rollup",
-        "caniuse-lite",
-    ];
+    let removable = ["typescript", "@esbuild", "vite", "rollup", "caniuse-lite"];
 
     for name in &removable {
         let path = nm.join(name);

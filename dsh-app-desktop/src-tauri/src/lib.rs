@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
-use tauri::{Emitter, Manager};
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
+use tauri::{Emitter, Manager};
 use tauri_plugin_shell::process::CommandChild;
 use tokio::runtime::Runtime;
 use tracing::{error, info};
@@ -46,7 +46,10 @@ fn ensure_dshmarket_in_profile(app: &tauri::App) {
     if !pkg_path.exists() {
         // First run: create the profile directory with dshmarket pre-configured.
         std::fs::create_dir_all(&profile_dir).unwrap_or_else(|e| {
-            error!("failed to create profile directory {:?}: {}", profile_dir, e);
+            error!(
+                "failed to create profile directory {:?}: {}",
+                profile_dir, e
+            );
         });
         let pkg = serde_json::json!({
             "name": "dsh-profile-web",
@@ -64,14 +67,23 @@ fn ensure_dshmarket_in_profile(app: &tauri::App) {
                 }
             }
         });
-        std::fs::write(&pkg_path, serde_json::to_string_pretty(&pkg).unwrap()).unwrap_or_else(|e| {
-            error!("failed to write profile package.json: {}", e);
-        });
+        std::fs::write(&pkg_path, serde_json::to_string_pretty(&pkg).unwrap()).unwrap_or_else(
+            |e| {
+                error!("failed to write profile package.json: {}", e);
+            },
+        );
         std::fs::write(profile_dir.join("cordis.patch.yml"), PROFILE_PATCH_TEMPLATE).ok();
-        std::fs::write(profile_dir.join("pnpm-workspace.yaml"), PROFILE_PNPM_WORKSPACE).ok();
+        std::fs::write(
+            profile_dir.join("pnpm-workspace.yaml"),
+            PROFILE_PNPM_WORKSPACE,
+        )
+        .ok();
         // Create symlink so the Cordis Loader can import dshmarket from the profile
         symlink_dshmarket(&profile_dir, &bundled_dshmarket);
-        info!("dshmarket pre-configured in new profile at {:?}", profile_dir);
+        info!(
+            "dshmarket pre-configured in new profile at {:?}",
+            profile_dir
+        );
         return;
     }
 
@@ -92,7 +104,11 @@ fn ensure_dshmarket_in_profile(app: &tauri::App) {
     };
 
     // Already has dshmarket?
-    if pkg.get("dependencies").and_then(|d| d.get("dshmarket")).is_some() {
+    if pkg
+        .get("dependencies")
+        .and_then(|d| d.get("dshmarket"))
+        .is_some()
+    {
         // Ensure symlink exists even if profile was already set up
         symlink_dshmarket(&profile_dir, &bundled_dshmarket);
         return;
@@ -168,8 +184,7 @@ fn resolve_bundled_dshmarket(app: &tauri::App) -> Option<PathBuf> {
         return Some(dev);
     }
     // 4. Root workspace node_modules
-    let ws = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../node_modules/dshmarket");
+    let ws = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../node_modules/dshmarket");
     if ws.join("package.json").exists() {
         return Some(ws);
     }
@@ -246,10 +261,13 @@ impl SidecarState {
 
 /// Emit sidecar status events to the frontend.
 fn emit_status(app: &tauri::AppHandle, status: &str, payload: &str) {
-    let _ = app.emit("dsh-status", serde_json::json!({
-        "status": status,
-        "message": payload,
-    }));
+    let _ = app.emit(
+        "dsh-status",
+        serde_json::json!({
+            "status": status,
+            "message": payload,
+        }),
+    );
 }
 
 pub fn run() {
@@ -287,10 +305,8 @@ pub fn run() {
             info!("dsh resolved at {:?}", dsh_path);
 
             // Build system tray icon
-            let show_item = MenuItemBuilder::with_id("show", "显示窗口")
-                .build(app)?;
-            let quit_item = MenuItemBuilder::with_id("quit", "退出")
-                .build(app)?;
+            let show_item = MenuItemBuilder::with_id("show", "显示窗口").build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
             let menu = MenuBuilder::new(app)
                 .item(&show_item)
                 .separator()
@@ -298,29 +314,30 @@ pub fn run() {
                 .build()?;
 
             // 获取 Tauri 从配置自动创建的托盘图标，添加菜单和事件
-            let tray = app.handle().tray_by_id("main")
+            let tray = app
+                .handle()
+                .tray_by_id("main")
                 .expect("tray icon should be created from config");
             tray.set_menu(Some(menu))?;
-            tray.on_menu_event(|app, event| {
-                match event.id().as_ref() {
-                    "show" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
+            tray.on_menu_event(|app, event| match event.id().as_ref() {
+                "show" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
                     }
-                    "quit" => {
-                        app.exit(0);
-                    }
-                    _ => {}
                 }
+                "quit" => {
+                    app.exit(0);
+                }
+                _ => {}
             });
             tray.on_tray_icon_event(|tray, event| {
                 if let TrayIconEvent::Click {
                     button: MouseButton::Left,
                     button_state: MouseButtonState::Up,
                     ..
-                } = event {
+                } = event
+                {
                     if let Some(window) = tray.app_handle().get_webview_window("main") {
                         let _ = window.show();
                         let _ = window.set_focus();
@@ -381,7 +398,11 @@ pub fn run() {
             // macOS: when the dock icon is clicked and there are no visible windows,
             // restore the hidden window (which was hidden-on-close to tray instead of quitting)
             #[cfg(target_os = "macos")]
-            if let tauri::RunEvent::Reopen { has_visible_windows, .. } = _event {
+            if let tauri::RunEvent::Reopen {
+                has_visible_windows,
+                ..
+            } = _event
+            {
                 if !has_visible_windows {
                     if let Some(window) = _app_handle.get_webview_window("main") {
                         let _ = window.show();
