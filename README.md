@@ -7,9 +7,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Nonnetta/deepseek-desktop/actions/workflows/ci.yml">
-    <img src="https://github.com/Nonnetta/deepseek-desktop/actions/workflows/ci.yml/badge.svg" alt="CI">
-  </a>
   <a href="https://github.com/Nonnetta/deepseek-desktop/releases">
     <img src="https://img.shields.io/github/v/release/Nonnetta/deepseek-desktop?color=7c4dff&label=release" alt="Release">
   </a>
