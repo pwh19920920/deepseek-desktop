@@ -41,6 +41,9 @@
     ],
     "resources": [
       "../resources/dsh"
-    ]
+    ],
+    "nsis": {
+      "installMode": "currentUser"
+    }
   }
 }

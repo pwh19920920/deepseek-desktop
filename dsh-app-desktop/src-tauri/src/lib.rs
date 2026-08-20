@@ -449,16 +449,10 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event {
-                // Kill the sidecar when the window is closed.
-                // This prevents file locking issues on Windows when updating.
-                if let Some(state) = window.app_handle().try_state::<SidecarState>() {
-                    if let Ok(mut guard) = state.child.lock() {
-                        if let Some(child) = guard.take() {
-                            let _ = dsh::shutdown_child(child);
-                        }
-                    }
-                }
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                // Don't quit — just hide to tray, keep the sidecar running
+                api.prevent_close();
+                window.hide().unwrap_or_default();
             }
         })
         .build(tauri::generate_context!())
