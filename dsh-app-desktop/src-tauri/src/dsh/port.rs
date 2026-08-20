@@ -34,8 +34,11 @@ pub async fn discover_port(cmd_events: &mut Receiver<CommandEvent>) -> anyhow::R
                     }
                 }
             }
-            Some(CommandEvent::Terminated(_)) => {
-                return Err(anyhow::anyhow!("sidecar exited before port discovery"));
+            Some(CommandEvent::Terminated(status)) => {
+                return Err(anyhow::anyhow!(
+                    "sidecar exited before port discovery with status: {:?}",
+                    status
+                ));
             }
             None => {
                 return Err(anyhow::anyhow!("sidecar event stream closed"));
