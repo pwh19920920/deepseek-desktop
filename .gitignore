@@ -48,3 +48,7 @@ dsh-app-desktop/.tmp/
 dsh-app-desktop/node_modules/
 dsh-app-desktop/pnpm-lock.yaml
 dsh-app-desktop/src-tauri/releases/
+
+# Unverified
+dsh-plugin-workbench/
+plans/
