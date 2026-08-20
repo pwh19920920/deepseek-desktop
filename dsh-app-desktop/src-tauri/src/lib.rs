@@ -380,6 +380,14 @@ pub fn run() {
                     }
                 }
                 "quit" => {
+                    // Kill the sidecar before exiting
+                    if let Some(state) = app.try_state::<SidecarState>() {
+                        if let Ok(mut guard) = state.child.lock() {
+                            if let Some(child) = guard.take() {
+                                let _ = dsh::shutdown_child(child);
+                            }
+                        }
+                    }
                     app.exit(0);
                 }
                 _ => {}
@@ -400,7 +408,9 @@ pub fn run() {
 
             // Ensure the web profile has dshmarket configured before starting dsh.
             // This runs on every launch but is a no-op after the first setup.
+            let profile_start = std::time::Instant::now();
             ensure_dshmarket_in_profile(app);
+            info!("profile setup took {:?}", profile_start.elapsed());
 
             let app_for_sidecar = app.handle().clone();
             std::thread::spawn(move || {
@@ -447,21 +457,30 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while building deepseek-desktop")
-        .run(|_app_handle, _event| {
+        .run(|app_handle, event| {
             // macOS: when the dock icon is clicked and there are no visible windows,
             // restore the hidden window (which was hidden-on-close to tray instead of quitting)
-            #[cfg(target_os = "macos")]
-            if let tauri::RunEvent::Reopen {
-                has_visible_windows,
-                ..
-            } = _event
-            {
-                if !has_visible_windows {
-                    if let Some(window) = _app_handle.get_webview_window("main") {
+            match event {
+                tauri::RunEvent::Reopen {
+                    has_visible_windows,
+                    ..
+                } if cfg!(target_os = "macos") && !has_visible_windows => {
+                    if let Some(window) = app_handle.get_webview_window("main") {
                         let _ = window.show();
                         let _ = window.set_focus();
                     }
                 }
+                tauri::RunEvent::Exit => {
+                    // Kill the sidecar when the app fully exits
+                    if let Some(state) = app_handle.try_state::<SidecarState>() {
+                        if let Ok(mut guard) = state.child.lock() {
+                            if let Some(child) = guard.take() {
+                                let _ = dsh::shutdown_child(child);
+                            }
+                        }
+                    }
+                }
+                _ => {}
             }
         });
 }
