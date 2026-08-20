@@ -295,11 +295,45 @@ fn ensure_dsh_node_modules(resource_dir: &Path) {
 }
 
 /// Extract a tar.gz archive to a target directory.
+/// On Windows 10+, uses the system `tar` command (bsdtar) which is much
+/// faster than the pure-Rust tar crate. Falls back to the Rust crate
+/// otherwise.
 fn extract_tarball(tarball: &Path, target: &Path) -> anyhow::Result<()> {
+    std::fs::create_dir_all(target)?;
+
+    // On Windows, try the system tar command first (much faster).
+    #[cfg(target_os = "windows")]
+    {
+        // Strip the \\?\ prefix — bsdtar may not handle it correctly.
+        let tarball_str = tarball.to_string_lossy();
+        let tarball_clean = tarball_str.strip_prefix(r"\\?\").unwrap_or(&tarball_str);
+        let target_str = target.to_string_lossy();
+        let target_clean = target_str.strip_prefix(r"\\?\").unwrap_or(&target_str);
+
+        let output = std::process::Command::new("tar")
+            .arg("-xzf")
+            .arg(tarball_clean)
+            .arg("-C")
+            .arg(target_clean)
+            .output();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                return Ok(());
+            }
+            // Fall through to Rust-based extraction on failure.
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            tracing::warn!(
+                "system tar failed, falling back to rust tar: {}",
+                stderr.trim()
+            );
+        }
+    }
+
+    // Fallback: pure-Rust extraction.
     let file = std::fs::File::open(tarball)?;
     let decoder = flate2::read::GzDecoder::new(file);
     let mut archive = tar::Archive::new(decoder);
-    std::fs::create_dir_all(target)?;
     archive.unpack(target)?;
     Ok(())
 }
@@ -356,11 +390,8 @@ pub fn run() {
 
             let resource_dir = app.path().resource_dir().unwrap_or_default();
 
-            // Extract the node_modules tarball on first launch (replaces the
-            // unpacked directory that was removed during build to speed up
-            // installer extraction).
-            ensure_dsh_node_modules(&resource_dir);
-
+            // Resolve the dsh kernel path (lib/bin.js) first so we can show
+            // an immediate error if it's missing, before any heavy work.
             let dsh_path = match paths::resolve_dsh_path(Some(resource_dir.clone())) {
                 Ok(p) => p,
                 Err(e) => {
@@ -427,7 +458,22 @@ pub fn run() {
             info!("profile setup took {:?}", profile_start.elapsed());
 
             let app_for_sidecar = app.handle().clone();
+            let resource_dir_for_thread = resource_dir.clone();
             std::thread::spawn(move || {
+                // Extract node_modules (first launch only) before starting the
+                // sidecar. Done on a worker thread so the UI doesn't freeze.
+                emit_status(
+                    &app_for_sidecar,
+                    "loading",
+                    "正在准备运行时环境，首次启动需要解压依赖…",
+                );
+                let extract_start = std::time::Instant::now();
+                ensure_dsh_node_modules(&resource_dir_for_thread);
+                info!(
+                    "node_modules preparation took {:?}",
+                    extract_start.elapsed()
+                );
+
                 let rt = Runtime::new().expect("failed to create tokio runtime");
                 let result = rt.block_on(async {
                     info!("spawning harness sidecar dsh={:?}", dsh_path);
