@@ -68,7 +68,10 @@ fn is_leap(y: i64) -> bool {
 fn setup_logging() {
     let log_dir = dsh_home().join("logs");
     if let Err(e) = std::fs::create_dir_all(&log_dir) {
-        eprintln!("[dsh-desktop] failed to create log dir {:?}: {}", log_dir, e);
+        eprintln!(
+            "[dsh-desktop] failed to create log dir {:?}: {}",
+            log_dir, e
+        );
         tracing_subscriber::fmt::init();
         return;
     }
@@ -83,10 +86,7 @@ fn setup_logging() {
     {
         Ok(file) => {
             // Write a session start marker directly
-            let _ = std::io::Write::write_all(
-                &mut &file,
-                b"\n--- dsh-desktop session start ---\n",
-            );
+            let _ = std::io::Write::write_all(&mut &file, b"\n--- dsh-desktop session start ---\n");
             // Drop the file handle; the closure will reopen it on each event
             drop(file);
 
