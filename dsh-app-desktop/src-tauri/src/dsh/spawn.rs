@@ -55,9 +55,17 @@ pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result
         app.shell().sidecar("node")?
     };
 
-    let cmd = cmd.args([dsh_path.to_string_lossy().as_ref(), "web", "--port", "0"]);
+    // On Windows, strip the \\?\ extended-length path prefix that Tauri's
+    // resource_dir() returns — Node.js cannot resolve paths with this prefix.
+    let dsh_arg = if cfg!(target_os = "windows") {
+        dsh_path.to_string_lossy().replacen("\\\\?\\", "", 1)
+    } else {
+        dsh_path.to_string_lossy().to_string()
+    };
 
-    info!("spawning harness sidecar: {:?} {}", dsh_path, "--port 0");
+    let cmd = cmd.args([&dsh_arg, "web", "--port", "0"]);
+
+    info!("spawning harness sidecar: {} --port 0", dsh_arg);
 
     let (mut cmd_events, child) = cmd.spawn()?;
     let discovered_port = port::discover_port(&mut cmd_events).await?;
