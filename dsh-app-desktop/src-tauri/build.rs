@@ -3,12 +3,10 @@ use std::{fs, io};
 
 fn main() {
     // Bundle dsh and its node_modules dependencies into the Tauri resource directory.
-    // This ensures the final app is self-contained at
-    //   {resource_dir}/resources/dsh/lib/bin.js
-    // (matched by the paths::resolve_dsh_path function).
     copy_dsh_source();
     copy_dsh_node_modules();
     prune_dsh_node_modules();
+    pack_dsh_node_modules();
 
     tauri_build::build()
 }
@@ -83,7 +81,14 @@ fn copy_dsh_node_modules() {
         return;
     }
 
-    if target.join("dsh").exists() || target.join(".package-lock.json").exists() {
+    if target.join("dsh").exists()
+        || target.join(".package-lock.json").exists()
+        || target
+            .parent()
+            .unwrap()
+            .join("node_modules.tar.gz")
+            .exists()
+    {
         eprintln!(
             "[deepseek-desktop] ../resources/dsh/node_modules/ already populated, skipping copy."
         );
@@ -326,4 +331,78 @@ fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
         }
     }
     Ok(())
+}
+
+/// Pack the pruned node_modules into a single tar.gz archive, then remove the
+/// original directory. This dramatically reduces the number of files in the
+/// bundle, speeding up installer extraction on Windows.
+fn pack_dsh_node_modules() {
+    let nm = PathBuf::from("../resources/dsh/node_modules");
+    let tarball = PathBuf::from("../resources/dsh/node_modules.tar.gz");
+
+    if !nm.exists() {
+        return;
+    }
+    if tarball.exists() {
+        eprintln!("[deepseek-desktop] node_modules.tar.gz already exists, skipping pack.");
+        return;
+    }
+
+    eprintln!("[deepseek-desktop] packing node_modules into node_modules.tar.gz ...");
+
+    let file = match fs::File::create(&tarball) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("[deepseek-desktop] failed to create tarball: {}", e);
+            return;
+        }
+    };
+    let encoder = flate2::write::GzEncoder::new(file, flate2::Compression::default());
+    let mut archive = tar::Builder::new(encoder);
+
+    // Walk the node_modules directory and add each entry to the archive
+    fn add_dir<W: io::Write>(
+        archive: &mut tar::Builder<W>,
+        path: &Path,
+        prefix: &Path,
+    ) -> io::Result<()> {
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let entry_path = entry.path();
+            let entry_name = entry.file_name();
+            // Path within the archive (relative to node_modules/)
+            let archive_path = prefix.join(&entry_name);
+            let ty = entry.file_type()?;
+            if ty.is_dir() {
+                archive.append_dir(&archive_path, &entry_path)?;
+                add_dir(archive, &entry_path, &archive_path)?;
+            } else {
+                archive.append_file(&archive_path, &mut fs::File::open(&entry_path)?)?;
+            }
+        }
+        Ok(())
+    }
+
+    if let Err(e) = add_dir(&mut archive, &nm, &Path::new(".")) {
+        eprintln!("[deepseek-desktop] failed to pack node_modules: {}", e);
+        let _ = fs::remove_file(&tarball);
+        return;
+    }
+
+    match archive.finish() {
+        Ok(_) => {
+            let size = dir_size(&tarball);
+            eprintln!(
+                "[deepseek-desktop] packed node_modules.tar.gz ({})",
+                format_size(size)
+            );
+            // Remove the original directory
+            rm_rf(&nm);
+            eprintln!("[deepseek-desktop] removed original node_modules directory");
+        }
+        Err(e) => {
+            eprintln!("[deepseek-desktop] failed to finalize tarball: {}", e);
+            let _ = fs::remove_file(&tarball);
+        }
+    }
 }

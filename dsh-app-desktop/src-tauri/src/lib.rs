@@ -249,6 +249,47 @@ fn canonicalize_path(path: &PathBuf) -> PathBuf {
     }
 }
 
+/// Extract the dsh node_modules tarball into the resource directory if it
+/// hasn't been extracted yet.  This is called once on first launch.
+fn ensure_dsh_node_modules(resource_dir: &Path) {
+    // Check locations in priority order (matching paths::resolve_dsh_path)
+    let candidates = [
+        // Traditional layout: resource_dir/resources/dsh/
+        resource_dir.join("resources").join("dsh"),
+        // Tauri 2 _up_ layout: resource_dir/_up_/resources/dsh/
+        resource_dir.join("_up_").join("resources").join("dsh"),
+    ];
+
+    for dsh_dir in &candidates {
+        let tarball = dsh_dir.join("node_modules.tar.gz");
+        if !tarball.exists() {
+            continue;
+        }
+        let nm_dir = dsh_dir.join("node_modules");
+        if nm_dir.exists() {
+            info!("dsh node_modules already extracted at {:?}", nm_dir);
+            return;
+        }
+
+        info!("extracting dsh node_modules from {:?} ...", tarball);
+        match extract_tarball(&tarball, &nm_dir) {
+            Ok(()) => info!("extracted dsh node_modules to {:?}", nm_dir),
+            Err(e) => error!("failed to extract dsh node_modules: {}", e),
+        }
+        return;
+    }
+}
+
+/// Extract a tar.gz archive to a target directory.
+fn extract_tarball(tarball: &Path, target: &Path) -> anyhow::Result<()> {
+    let file = std::fs::File::open(tarball)?;
+    let decoder = flate2::read::GzDecoder::new(file);
+    let mut archive = tar::Archive::new(decoder);
+    std::fs::create_dir_all(target)?;
+    archive.unpack(target)?;
+    Ok(())
+}
+
 /// Handle to the running harness sidecar, stored in Tauri state.
 #[derive(Clone)]
 pub struct SidecarState {
@@ -300,6 +341,12 @@ pub fn run() {
             let handle = app.handle().clone();
 
             let resource_dir = app.path().resource_dir().unwrap_or_default();
+
+            // Extract the node_modules tarball on first launch (replaces the
+            // unpacked directory that was removed during build to speed up
+            // installer extraction).
+            ensure_dsh_node_modules(&resource_dir);
+
             let dsh_path = match paths::resolve_dsh_path(Some(resource_dir.clone())) {
                 Ok(p) => p,
                 Err(e) => {
