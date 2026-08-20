@@ -390,7 +390,7 @@ fn pack_dsh_node_modules() {
         Ok(())
     }
 
-    if let Err(e) = add_dir(&mut archive, &nm, &Path::new(".")) {
+    if let Err(e) = add_dir(&mut archive, &nm, Path::new(".")) {
         eprintln!("[deepseek-desktop] failed to pack node_modules: {}", e);
         let _ = fs::remove_file(&tarball);
         return;
