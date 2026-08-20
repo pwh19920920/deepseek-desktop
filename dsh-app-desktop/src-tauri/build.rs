@@ -6,7 +6,14 @@ fn main() {
     copy_dsh_source();
     copy_dsh_node_modules();
     prune_dsh_node_modules();
-    pack_dsh_node_modules();
+
+    // Only pack node_modules into a tarball on Windows, where the MSI/NSIS
+    // installer is extremely slow with thousands of small files.  macOS and
+    // Linux use .dmg/.deb which handle directory trees efficiently.
+    let target = std::env::var("TARGET").unwrap_or_default();
+    if target.contains("windows") {
+        pack_dsh_node_modules();
+    }
 
     tauri_build::build()
 }
