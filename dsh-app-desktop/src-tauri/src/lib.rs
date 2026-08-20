@@ -461,10 +461,11 @@ pub fn run() {
             // macOS: when the dock icon is clicked and there are no visible windows,
             // restore the hidden window (which was hidden-on-close to tray instead of quitting)
             match event {
+                #[cfg(target_os = "macos")]
                 tauri::RunEvent::Reopen {
                     has_visible_windows,
                     ..
-                } if cfg!(target_os = "macos") && !has_visible_windows => {
+                } if !has_visible_windows => {
                     if let Some(window) = app_handle.get_webview_window("main") {
                         let _ = window.show();
                         let _ = window.set_focus();
