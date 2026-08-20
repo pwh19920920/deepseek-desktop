@@ -266,14 +266,28 @@ fn ensure_dsh_node_modules(resource_dir: &Path) {
             continue;
         }
         let nm_dir = dsh_dir.join("node_modules");
-        if nm_dir.exists() {
+        // Integrity marker — only present after a complete extraction.
+        let marker = nm_dir.join(".dsh-bundled");
+
+        if marker.exists() {
             info!("dsh node_modules already extracted at {:?}", nm_dir);
             return;
         }
 
+        // Directory may be missing, partial, or a leftover from an older
+        // build that shipped node_modules unpacked. Remove and re-extract.
+        if nm_dir.exists() {
+            info!("removing incomplete dsh node_modules at {:?}", nm_dir);
+            let _ = std::fs::remove_dir_all(&nm_dir);
+        }
+
         info!("extracting dsh node_modules from {:?} ...", tarball);
         match extract_tarball(&tarball, &nm_dir) {
-            Ok(()) => info!("extracted dsh node_modules to {:?}", nm_dir),
+            Ok(()) => {
+                // Write integrity marker so we skip on next launch.
+                let _ = std::fs::write(&marker, "ok");
+                info!("extracted dsh node_modules to {:?}", nm_dir);
+            }
             Err(e) => error!("failed to extract dsh node_modules: {}", e),
         }
         return;
