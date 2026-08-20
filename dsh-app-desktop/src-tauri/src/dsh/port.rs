@@ -34,19 +34,8 @@ pub async fn discover_port(cmd_events: &mut Receiver<CommandEvent>) -> anyhow::R
                     }
                 }
             }
-            Some(CommandEvent::Stderr(line)) => {
-                if let Ok(line_str) = String::from_utf8(line) {
-                    // Also check stderr for port patterns (some runtimes output here)
-                    if let Some(port) = extract_port(&line_str)? {
-                        return Ok(port);
-                    }
-                }
-            }
-            Some(CommandEvent::Terminated(status)) => {
-                return Err(anyhow::anyhow!(
-                    "sidecar exited before port discovery with status: {:?}",
-                    status
-                ));
+            Some(CommandEvent::Terminated(_)) => {
+                return Err(anyhow::anyhow!("sidecar exited before port discovery"));
             }
             None => {
                 return Err(anyhow::anyhow!("sidecar event stream closed"));
