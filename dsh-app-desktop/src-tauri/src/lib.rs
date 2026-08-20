@@ -192,9 +192,8 @@ fn resolve_bundled_dshmarket(app: &tauri::App) -> Option<PathBuf> {
 }
 
 /// Create a symlink from the profile's node_modules to the bundled dshmarket.
-/// If the symlink already exists and points to a valid dshmarket package, it
-/// is left untouched — this allows install.js to manage the version.  Only
-/// creates or repairs the symlink when it is missing or broken.
+/// If the user has a real installation (not a symlink), leave it untouched —
+/// this allows upgrading dshmarket independently of the app bundle.
 fn symlink_dshmarket(profile_dir: &Path, bundled_dshmarket: &Option<PathBuf>) {
     let Some(src) = bundled_dshmarket else {
         error!("dshmarket not found in bundled resources, skipping symlink");
@@ -202,19 +201,26 @@ fn symlink_dshmarket(profile_dir: &Path, bundled_dshmarket: &Option<PathBuf>) {
     };
     let link_path = profile_dir.join("node_modules").join("dshmarket");
 
-    // If the symlink already exists and points to a valid dshmarket, leave it.
-    if let Ok(meta) = std::fs::symlink_metadata(&link_path) {
-        if meta.file_type().is_symlink() {
-            let target = std::fs::read_link(&link_path).unwrap_or_default();
-            let target_pkg = target.join("package.json");
-            if target_pkg.exists() {
-                return; // existing symlink is valid
+    // If the path already exists, leave it alone — the user may have
+    // upgraded or replaced it with a real installation.
+    if link_path.exists() {
+        if let Ok(meta) = std::fs::symlink_metadata(&link_path) {
+            if meta.file_type().is_symlink() {
+                let target = std::fs::read_link(&link_path).unwrap_or_default();
+                let target_pkg = target.join("package.json");
+                if target_pkg.exists() {
+                    return; // existing symlink is valid
+                }
+                // broken symlink — remove and recreate
+                let _ = std::fs::remove_file(&link_path);
+            } else {
+                // Real directory (not a symlink) — user upgraded it, leave alone
+                info!("dshmarket is a real installation in profile, not overwriting");
+                return;
             }
-            // broken symlink — remove it
-            let _ = std::fs::remove_file(&link_path);
         } else {
-            // Not a symlink — remove it
-            let _ = std::fs::remove_dir_all(&link_path);
+            // Can't read metadata, leave alone
+            return;
         }
     }
 
@@ -228,7 +234,7 @@ fn symlink_dshmarket(profile_dir: &Path, bundled_dshmarket: &Option<PathBuf>) {
         std::os::unix::fs::symlink(canonicalize_path(src), &link_path).ok();
     }
     if link_path.exists() || link_path.is_symlink() {
-        info!("symlinked dshmarket into profile node_modules");
+        info!("symlinked bundled dshmarket into profile node_modules");
     } else {
         error!("failed to symlink dshmarket into profile node_modules");
     }

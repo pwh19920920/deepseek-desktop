@@ -1,5 +1,6 @@
 use tauri_plugin_shell::process::CommandEvent;
 use tokio::sync::mpsc::Receiver;
+use tracing::warn;
 
 const PORT_PATTERNS: &[&str] = &[
     r"listening on \S+:(\d+)",
@@ -32,6 +33,11 @@ pub async fn discover_port(cmd_events: &mut Receiver<CommandEvent>) -> anyhow::R
                     if let Some(port) = extract_port(&line_str)? {
                         return Ok(port);
                     }
+                }
+            }
+            Some(CommandEvent::Stderr(line)) => {
+                if let Ok(line_str) = String::from_utf8(line) {
+                    warn!("sidecar stderr: {}", line_str.trim_end());
                 }
             }
             Some(CommandEvent::Terminated(status)) => {
