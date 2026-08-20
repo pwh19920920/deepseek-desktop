@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::time::Duration;
 use tauri::AppHandle;
 use tauri_plugin_shell::ShellExt;
 use tracing::info;
@@ -16,7 +17,12 @@ pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result
     );
 
     let (mut cmd_events, child) = cmd.spawn()?;
-    let discovered_port = port::discover_port(&mut cmd_events).await?;
+    let discovered_port = tokio::time::timeout(
+        Duration::from_secs(30),
+        port::discover_port(&mut cmd_events),
+    )
+    .await
+    .map_err(|_| anyhow::anyhow!("port discovery timed out after 30 seconds"))??;
 
     Ok(SidecarHandle {
         port: discovered_port,
