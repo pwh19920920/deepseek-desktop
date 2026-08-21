@@ -41,6 +41,14 @@
     ],
     "resources": [
       "../resources/dsh"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["SimpChinese", "English"],
+        "displayLanguageSelector": true,
+        "installerHooks": "./nsis/hooks.nsh"
+      }
+    }
   }
 }

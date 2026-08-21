@@ -5,8 +5,9 @@ use tracing::{info, warn};
 
 use super::{port, SidecarHandle};
 
-/// Clean up stale lock files from previous sessions that could prevent
-/// the dsh sidecar from starting (e.g. plugin crash locks).
+/// Clean up stale lock files from previous sessions.
+/// We scan ~/.dsh subdirectories but DO NOT follow symlinks into node_modules,
+/// which would trigger Windows Defender scans over 54MB/10k+ files.
 fn cleanup_stale_locks() {
     let dsh_home = std::env::var("DSH_HOME").unwrap_or_else(|_| {
         let home = std::env::var("HOME")
@@ -14,26 +15,62 @@ fn cleanup_stale_locks() {
             .unwrap_or_else(|_| ".".to_string());
         format!("{}/.dsh", home)
     });
-    let dsh_root = PathBuf::from(dsh_home);
+    let dsh_root = std::path::PathBuf::from(&dsh_home);
+    if !dsh_root.exists() {
+        return;
+    }
 
-    // Walk the dsh directory tree and remove stale lock/ledger files
-    fn walk_remove(dir: &std::path::Path) {
-        if let Ok(entries) = std::fs::read_dir(dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    walk_remove(&path);
-                } else if let Some(ext) = path.extension() {
-                    if ext == "lock" || ext == "ledger" {
-                        warn!("removing stale lock file: {:?}", path);
-                        let _ = std::fs::remove_file(&path);
+    // Known subdirectories that may contain lock files (profiles, task-board, storages, etc.)
+    // We scan each one shallowly, but never follow symlinks.
+    let subdirs = ["profiles", "task-board", "storages", "sessions"];
+
+    for subdir in subdirs {
+        let subdir_path = dsh_root.join(subdir);
+        if !subdir_path.exists() {
+            continue;
+        }
+        remove_locks_shallow(&subdir_path);
+    }
+}
+
+/// Remove .lock/.ledger files in a directory, going one level deep.
+/// Symlinks are skipped to avoid walking into node_modules.
+fn remove_locks_shallow(dir: &std::path::Path) {
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            // Skip symlinks - they point to node_modules or other large trees
+            if let Ok(meta) = std::fs::symlink_metadata(&path) {
+                if meta.file_type().is_symlink() {
+                    continue;
+                }
+            }
+            if path.is_dir() {
+                // Go one level deeper, still skipping symlinks
+                if let Ok(sub_entries) = std::fs::read_dir(&path) {
+                    for sub_entry in sub_entries.flatten() {
+                        let sub_path = sub_entry.path();
+                        if let Ok(meta) = std::fs::symlink_metadata(&sub_path) {
+                            if meta.file_type().is_symlink() {
+                                continue;
+                            }
+                        }
+                        if let Some(ext) = sub_path.extension() {
+                            if ext == "lock" || ext == "ledger" {
+                                warn!("removing stale lock file: {:?}", sub_path);
+                                let _ = std::fs::remove_file(&sub_path);
+                            }
+                        }
                     }
+                }
+            } else if let Some(ext) = path.extension() {
+                if ext == "lock" || ext == "ledger" {
+                    warn!("removing stale lock file: {:?}", path);
+                    let _ = std::fs::remove_file(&path);
                 }
             }
         }
     }
-
-    walk_remove(&dsh_root);
 }
 
 /// Spawn the harness sidecar using Tauri's shell sidecar API.

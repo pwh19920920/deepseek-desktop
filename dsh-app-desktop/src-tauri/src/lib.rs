@@ -3,7 +3,6 @@ use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
 use tauri::{Emitter, Manager};
 use tauri_plugin_shell::process::CommandChild;
-use tokio::runtime::Runtime;
 use tracing::{error, info};
 
 pub mod capabilities;
@@ -459,9 +458,10 @@ pub fn run() {
 
             let app_for_sidecar = app.handle().clone();
             let resource_dir_for_thread = resource_dir.clone();
-            std::thread::spawn(move || {
+            // Use Tauri's async runtime instead of spawning a new thread + tokio runtime
+            tauri::async_runtime::spawn(async move {
                 // Extract node_modules (first launch only) before starting the
-                // sidecar. Done on a worker thread so the UI doesn't freeze.
+                // sidecar. Done on async runtime so the UI doesn't freeze.
                 emit_status(
                     &app_for_sidecar,
                     "loading",
@@ -474,11 +474,8 @@ pub fn run() {
                     extract_start.elapsed()
                 );
 
-                let rt = Runtime::new().expect("failed to create tokio runtime");
-                let result = rt.block_on(async {
-                    info!("spawning harness sidecar dsh={:?}", dsh_path);
-                    dsh::spawn_sidecar(&app_for_sidecar, dsh_path).await
-                });
+                info!("spawning harness sidecar dsh={:?}", dsh_path);
+                let result = dsh::spawn_sidecar(&app_for_sidecar, dsh_path).await;
 
                 match result {
                     Ok(sc) => {
