@@ -17,8 +17,8 @@ importers:
         specifier: ^2.11.1
         version: 2.11.1
       dshmarket:
-        specifier: ^1.14.1
-        version: 1.14.1(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-settings@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-brand@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1))(@deepseek-ai/schemastery@3.18.1))
+        specifier: ^1.16.6
+        version: 1.16.6(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-settings@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-brand@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1))(@deepseek-ai/schemastery@3.18.1))
       react:
         specifier: ^18
         version: 18.3.1
@@ -3364,8 +3364,8 @@ packages:
     resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
     engines: {node: '>=0.3.1'}
 
-  dshmarket@1.14.1:
-    resolution: {integrity: sha512-8uklY5FAwYM+/KDwcULVFS/h4OHwuL03g4UPAnFQ2ggR+oGEt7m+JJRaC6DuzmseoNCaUuBfQC1/GGQFeg8FuQ==}
+  dshmarket@1.16.6:
+    resolution: {integrity: sha512-zdKf5+ylqsZVLMQRnCS0slj3hG45CtqlDss5j/jMrvGdfFAiZKsnNKsluNRM2QG0o+3NXdbkMjCv2lALCYNqKA==}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.1
       '@deepseek-ai/dsh-settings': ^0.1.0-rc.7
@@ -8009,7 +8009,7 @@ snapshots:
 
   diff@9.0.0: {}
 
-  dshmarket@1.14.1(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-settings@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-brand@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1))(@deepseek-ai/schemastery@3.18.1)):
+  dshmarket@1.16.6(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-settings@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-brand@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1))(@deepseek-ai/schemastery@3.18.1)):
     dependencies:
       '@deepseek-ai/cordis': 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       js-yaml: 4.3.1
