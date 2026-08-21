@@ -354,12 +354,24 @@ impl SidecarState {
 }
 
 /// Emit sidecar status events to the frontend.
-fn emit_status(app: &tauri::AppHandle, status: &str, payload: &str) {
+fn emit_status(app: &tauri::AppHandle, status: &str, message: &str) {
     let _ = app.emit(
         "dsh-status",
         serde_json::json!({
             "status": status,
-            "message": payload,
+            "message": message,
+        }),
+    );
+}
+
+/// Emit startup phase events with progress.
+fn emit_phase(app: &tauri::AppHandle, phase: &str, message: &str) {
+    let _ = app.emit(
+        "dsh-status",
+        serde_json::json!({
+            "status": "loading",
+            "phase": phase,
+            "message": message,
         }),
     );
 }
@@ -452,6 +464,7 @@ pub fn run() {
 
             // Ensure the web profile has dshmarket configured before starting dsh.
             // This runs on every launch but is a no-op after the first setup.
+            emit_phase(app.handle(), "profile", "正在检查配置…");
             let profile_start = std::time::Instant::now();
             ensure_dshmarket_in_profile(app);
             info!("profile setup took {:?}", profile_start.elapsed());
@@ -462,11 +475,7 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 // Extract node_modules (first launch only) before starting the
                 // sidecar. Done on async runtime so the UI doesn't freeze.
-                emit_status(
-                    &app_for_sidecar,
-                    "loading",
-                    "正在准备运行时环境，首次启动需要解压依赖…",
-                );
+                emit_phase(&app_for_sidecar, "runtime", "正在准备运行时…");
                 let extract_start = std::time::Instant::now();
                 ensure_dsh_node_modules(&resource_dir_for_thread);
                 info!(
@@ -474,6 +483,7 @@ pub fn run() {
                     extract_start.elapsed()
                 );
 
+                emit_phase(&app_for_sidecar, "sidecar", "正在启动服务…");
                 info!("spawning harness sidecar dsh={:?}", dsh_path);
                 let result = dsh::spawn_sidecar(&app_for_sidecar, dsh_path).await;
 

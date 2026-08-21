@@ -1,0 +1,76 @@
+
+--- dsh-desktop session start ---
+Aug 21 10:32:52.044  INFO deepseek_desktop: DeepSeek Harness Desktop starting...
+Aug 21 10:32:54.236  INFO deepseek_desktop_lib: dsh resolved at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:32:54.247  INFO deepseek_desktop_lib: profile setup took 8.863ms
+Aug 21 10:32:54.251  INFO deepseek_desktop_lib: dsh node_modules already extracted at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\node_modules"
+Aug 21 10:32:54.251  INFO deepseek_desktop_lib: node_modules preparation took 1.5853ms
+Aug 21 10:32:54.263  INFO deepseek_desktop_lib: spawning harness sidecar dsh="\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:33:13.103  INFO deepseek_desktop_lib::dsh::spawn: spawning node.exe directly at "C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\node.exe"
+Aug 21 10:33:13.103  INFO deepseek_desktop_lib::dsh::spawn: spawning harness sidecar: C:\Users\pengweihuang\AppData\Local\DeepSeek Harness\_up_\resources\dsh\lib\bin.js --port 0
+Aug 21 10:33:19.351  INFO deepseek_desktop_lib: harness sidecar ready at http://127.0.0.1:52968
+Aug 21 10:34:51.763  INFO deepseek_desktop_lib::dsh::shutdown: shutting down harness sidecar...
+Aug 21 10:34:51.764  INFO deepseek_desktop_lib::dsh::shutdown: harness sidecar terminated
+
+--- dsh-desktop session start ---
+Aug 21 10:35:25.837  INFO deepseek_desktop: DeepSeek Harness Desktop starting...
+Aug 21 10:35:30.008  INFO deepseek_desktop_lib: dsh resolved at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:35:30.022  INFO deepseek_desktop_lib: profile setup took 11.7377ms
+Aug 21 10:35:30.028  INFO deepseek_desktop_lib: dsh node_modules already extracted at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\node_modules"
+Aug 21 10:35:30.029  INFO deepseek_desktop_lib: node_modules preparation took 3.2046ms
+Aug 21 10:35:30.039  INFO deepseek_desktop_lib: spawning harness sidecar dsh="\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:36:16.363  INFO deepseek_desktop_lib::dsh::spawn: spawning node.exe directly at "C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\node.exe"
+Aug 21 10:36:16.363  INFO deepseek_desktop_lib::dsh::spawn: spawning harness sidecar: C:\Users\pengweihuang\AppData\Local\DeepSeek Harness\_up_\resources\dsh\lib\bin.js --port 0
+Aug 21 10:36:23.572  INFO deepseek_desktop_lib: harness sidecar ready at http://127.0.0.1:61425
+Aug 21 10:36:55.166  INFO deepseek_desktop_lib::dsh::shutdown: shutting down harness sidecar...
+Aug 21 10:36:55.167  INFO deepseek_desktop_lib::dsh::shutdown: harness sidecar terminated
+
+--- dsh-desktop session start ---
+Aug 21 10:37:02.458  INFO deepseek_desktop: DeepSeek Harness Desktop starting...
+Aug 21 10:37:04.439  INFO deepseek_desktop_lib: dsh resolved at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:37:04.449  INFO deepseek_desktop_lib: profile setup took 9.0517ms
+Aug 21 10:37:04.453  INFO deepseek_desktop_lib: dsh node_modules already extracted at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\node_modules"
+Aug 21 10:37:04.453  INFO deepseek_desktop_lib: node_modules preparation took 1.5577ms
+Aug 21 10:37:04.462  INFO deepseek_desktop_lib: spawning harness sidecar dsh="\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:37:22.908  INFO deepseek_desktop_lib::dsh::spawn: spawning node.exe directly at "C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\node.exe"
+Aug 21 10:37:22.908  INFO deepseek_desktop_lib::dsh::spawn: spawning harness sidecar: C:\Users\pengweihuang\AppData\Local\DeepSeek Harness\_up_\resources\dsh\lib\bin.js --port 0
+Aug 21 10:37:29.719  INFO deepseek_desktop_lib: harness sidecar ready at http://127.0.0.1:61642
+Aug 21 10:38:18.948  INFO deepseek_desktop_lib::dsh::shutdown: shutting down harness sidecar...
+Aug 21 10:38:18.949  INFO deepseek_desktop_lib::dsh::shutdown: harness sidecar terminated
+
+--- dsh-desktop session start ---
+Aug 21 10:38:24.038  INFO deepseek_desktop: DeepSeek Harness Desktop starting...
+Aug 21 10:38:25.976  INFO deepseek_desktop_lib: dsh resolved at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:38:25.983  INFO deepseek_desktop_lib: profile setup took 4.7165ms
+Aug 21 10:38:25.984  INFO deepseek_desktop_lib: dsh node_modules already extracted at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\node_modules"
+Aug 21 10:38:25.985  INFO deepseek_desktop_lib: node_modules preparation took 909.6µs
+Aug 21 10:38:25.992  INFO deepseek_desktop_lib: spawning harness sidecar dsh="\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 10:38:48.015  INFO deepseek_desktop_lib::dsh::spawn: spawning node.exe directly at "C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\node.exe"
+Aug 21 10:38:48.015  INFO deepseek_desktop_lib::dsh::spawn: spawning harness sidecar: C:\Users\pengweihuang\AppData\Local\DeepSeek Harness\_up_\resources\dsh\lib\bin.js --port 0
+Aug 21 10:38:55.327  INFO deepseek_desktop_lib: harness sidecar ready at http://127.0.0.1:61754
+Aug 21 12:54:39.711  INFO deepseek_desktop_lib::dsh::shutdown: shutting down harness sidecar...
+Aug 21 12:54:39.711  INFO deepseek_desktop_lib::dsh::shutdown: harness sidecar terminated
+
+--- dsh-desktop session start ---
+Aug 21 12:54:51.755  INFO deepseek_desktop: DeepSeek Harness Desktop starting...
+Aug 21 12:54:54.431  INFO deepseek_desktop_lib: dsh resolved at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 12:54:54.451  INFO deepseek_desktop_lib: profile setup took 15.4812ms
+Aug 21 12:54:54.456  INFO deepseek_desktop_lib: dsh node_modules already extracted at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\node_modules"
+Aug 21 12:54:54.459  INFO deepseek_desktop_lib: node_modules preparation took 4.657ms
+Aug 21 12:54:54.472  INFO deepseek_desktop_lib: spawning harness sidecar dsh="\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 12:55:31.584  INFO deepseek_desktop_lib::dsh::spawn: spawning node.exe directly at "C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\node.exe"
+Aug 21 12:55:31.585  INFO deepseek_desktop_lib::dsh::spawn: spawning harness sidecar: C:\Users\pengweihuang\AppData\Local\DeepSeek Harness\_up_\resources\dsh\lib\bin.js --port 0
+Aug 21 12:55:38.296  INFO deepseek_desktop_lib: harness sidecar ready at http://127.0.0.1:57960
+Aug 21 12:55:51.941  INFO deepseek_desktop_lib::dsh::shutdown: shutting down harness sidecar...
+Aug 21 12:55:51.945  INFO deepseek_desktop_lib::dsh::shutdown: harness sidecar terminated
+
+--- dsh-desktop session start ---
+Aug 21 12:59:21.388  INFO deepseek_desktop: DeepSeek Harness Desktop starting...
+Aug 21 12:59:24.715  INFO deepseek_desktop_lib: dsh resolved at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 12:59:24.752  INFO deepseek_desktop_lib: profile setup took 31.8641ms
+Aug 21 12:59:24.760  INFO deepseek_desktop_lib: dsh node_modules already extracted at "\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\node_modules"
+Aug 21 12:59:24.767  INFO deepseek_desktop_lib: node_modules preparation took 8.2836ms
+Aug 21 12:59:24.779  INFO deepseek_desktop_lib: spawning harness sidecar dsh="\\\\?\\C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\_up_\\resources\\dsh\\lib\\bin.js"
+Aug 21 13:01:05.645  INFO deepseek_desktop_lib::dsh::spawn: spawning node.exe directly at "C:\\Users\\pengweihuang\\AppData\\Local\\DeepSeek Harness\\node.exe"
+Aug 21 13:01:05.646  INFO deepseek_desktop_lib::dsh::spawn: spawning harness sidecar: C:\Users\pengweihuang\AppData\Local\DeepSeek Harness\_up_\resources\dsh\lib\bin.js --port 0
+Aug 21 13:01:18.830  INFO deepseek_desktop_lib: harness sidecar ready at http://127.0.0.1:59101
