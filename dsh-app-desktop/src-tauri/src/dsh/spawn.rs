@@ -1,5 +1,6 @@
 use std::path::PathBuf;
-use tauri::AppHandle;
+use std::sync::Arc;
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_shell::ShellExt;
 use tracing::{info, warn};
 
@@ -112,4 +113,89 @@ pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result
         child,
         dsh_path,
     })
+}
+
+/// Watch for sidecar restart and handle WebView reload.
+/// When dsh-market triggers a restart, the sidecar process exits and a new one
+/// takes over. This function detects that and reloads the WebView.
+pub fn watch_for_restart(
+    app: AppHandle,
+    port: u16,
+    _child: Arc<std::sync::Mutex<Option<tauri_plugin_shell::process::CommandChild>>>,
+) {
+    std::thread::spawn(move || {
+        info!("watching for sidecar restart on port {}", port);
+
+        // Poll to check if the sidecar is still serving
+        let check_interval = std::time::Duration::from_secs(1);
+        let mut was_serving = true;
+
+        loop {
+            let is_serving = std::net::TcpStream::connect(format!("127.0.0.1:{}", port)).is_ok();
+
+            if was_serving && !is_serving {
+                // Sidecar stopped serving - it might be restarting
+                info!("sidecar stopped serving on port {}, watching for restart...", port);
+
+                // dsh-market's restart helper waits up to 30s for port release + 20s for new process
+                let restart_timeout = std::time::Duration::from_secs(60);
+                let start = std::time::Instant::now();
+
+                while start.elapsed() < restart_timeout {
+                    std::thread::sleep(std::time::Duration::from_millis(500));
+
+                    if std::net::TcpStream::connect(format!("127.0.0.1:{}", port)).is_ok() {
+                        info!("restart detected - new sidecar is listening on port {}", port);
+
+                        // Notify frontend about restart
+                        let _ = app.emit(
+                            "dsh-status",
+                            serde_json::json!({
+                                "status": "restarting",
+                                "message": "正在重启，请稍候…",
+                                "port": port,
+                            }),
+                        );
+
+                        // Wait a moment for the new process to fully initialize
+                        std::thread::sleep(std::time::Duration::from_secs(1));
+
+                        // Reload the WebView
+                        if let Some(window) = app.get_webview_window("main") {
+                            let url = format!("http://127.0.0.1:{}", port);
+                            info!("reloading WebView to {}", url);
+                            let _ = window.navigate(url.parse().expect("valid URL"));
+                        }
+
+                        // Notify frontend that restart is complete
+                        let _ = app.emit(
+                            "dsh-status",
+                            serde_json::json!({
+                                "status": "ready",
+                                "message": format!("http://127.0.0.1:{}", port),
+                            }),
+                        );
+
+                        was_serving = true;
+                        break;
+                    }
+                }
+
+                // If no restart detected within timeout, report error
+                if !was_serving {
+                    warn!("sidecar exited without restart detected");
+                    let _ = app.emit(
+                        "dsh-status",
+                        serde_json::json!({
+                            "status": "error",
+                            "message": "Sidecar 进程意外退出",
+                        }),
+                    );
+                    return; // Exit the thread
+                }
+            }
+
+            std::thread::sleep(check_interval);
+        }
+    });
 }

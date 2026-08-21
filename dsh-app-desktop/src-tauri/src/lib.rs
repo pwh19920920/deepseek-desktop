@@ -480,10 +480,13 @@ pub fn run() {
                 match result {
                     Ok(sc) => {
                         let url_str = sc.url();
+                        let port = sc.port;
                         info!("harness sidecar ready at {}", url_str);
+
+                        let child_arc = std::sync::Arc::new(std::sync::Mutex::new(Some(sc.child)));
                         let state = SidecarState {
-                            port: sc.port,
-                            child: std::sync::Arc::new(std::sync::Mutex::new(Some(sc.child))),
+                            port,
+                            child: child_arc.clone(),
                             dsh_path: sc.dsh_path,
                         };
                         app_for_sidecar.manage(state);
@@ -495,6 +498,13 @@ pub fn run() {
 
                         // Notify frontend
                         emit_status(&app_for_sidecar, "ready", &url_str);
+
+                        // Start watching for sidecar restart
+                        dsh::spawn::watch_for_restart(
+                            app_for_sidecar.clone(),
+                            port,
+                            child_arc,
+                        );
                     }
                     Err(e) => {
                         error!("failed to spawn harness sidecar: {}", e);
