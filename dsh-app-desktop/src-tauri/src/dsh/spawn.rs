@@ -135,7 +135,10 @@ pub fn watch_for_restart(
 
             if was_serving && !is_serving {
                 // Sidecar stopped serving - it might be restarting
-                info!("sidecar stopped serving on port {}, watching for restart...", port);
+                info!(
+                    "sidecar stopped serving on port {}, watching for restart...",
+                    port
+                );
 
                 // dsh-market's restart helper waits up to 30s for port release + 20s for new process
                 let restart_timeout = std::time::Duration::from_secs(60);
@@ -145,7 +148,10 @@ pub fn watch_for_restart(
                     std::thread::sleep(std::time::Duration::from_millis(500));
 
                     if std::net::TcpStream::connect(format!("127.0.0.1:{}", port)).is_ok() {
-                        info!("restart detected - new sidecar is listening on port {}", port);
+                        info!(
+                            "restart detected - new sidecar is listening on port {}",
+                            port
+                        );
 
                         // Notify frontend about restart
                         let _ = app.emit(

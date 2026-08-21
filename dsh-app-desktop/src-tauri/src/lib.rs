@@ -500,11 +500,7 @@ pub fn run() {
                         emit_status(&app_for_sidecar, "ready", &url_str);
 
                         // Start watching for sidecar restart
-                        dsh::spawn::watch_for_restart(
-                            app_for_sidecar.clone(),
-                            port,
-                            child_arc,
-                        );
+                        dsh::spawn::watch_for_restart(app_for_sidecar.clone(), port, child_arc);
                     }
                     Err(e) => {
                         error!("failed to spawn harness sidecar: {}", e);
