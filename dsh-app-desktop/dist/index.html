@@ -13,13 +13,15 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: #1a1a2e;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       color: #e4e4e7;
       -webkit-app-region: drag;
     }
-    .loading {
+    .container {
       text-align: center;
       padding: 2rem;
+      width: 100%;
+      max-width: 400px;
     }
     .logo {
       width: 96px;
@@ -35,59 +37,107 @@
       border-radius: 12px;
       animation: pulse 2s ease-in-out infinite;
     }
-    .loading h1 {
+    h1 {
       font-size: 1.35rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
       color: #f4f4f5;
     }
-    .loading p {
+    .phase-label {
       color: #4fc3f7;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 500;
-      animation: fadePulse 2s ease-in-out infinite;
+      margin-bottom: 1.5rem;
+      min-height: 1.2em;
     }
-    .loading-bar {
-      width: 200px;
-      height: 3px;
+    .error-detail {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .progress-container {
+      width: 100%;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 4px;
       background: #2a2a4a;
       border-radius: 4px;
-      margin: 1.5rem auto 0;
       overflow: hidden;
+      margin-bottom: 1rem;
     }
-    .loading-bar-fill {
+    .progress-fill {
       height: 100%;
-      width: 30%;
       background: linear-gradient(90deg, #4fc3f7, #7c4dff);
       border-radius: 4px;
-      animation: bar 1.5s ease-in-out infinite;
+      transition: width 0.3s ease;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 0.5rem;
+    }
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3a3a5a;
+      transition: all 0.3s ease;
+    }
+    .step-dot.active {
+      background: #4fc3f7;
+      box-shadow: 0 0 8px rgba(79, 195, 247, 0.5);
+    }
+    .step-label {
+      font-size: 0.7rem;
+      color: #6a6a8a;
+      transition: color 0.3s ease;
+    }
+    .progress-step.active .step-label {
+      color: #a0a0c0;
+    }
     @keyframes pulse {
       0%, 100% { opacity: 0.7; transform: scale(0.96); }
       50% { opacity: 1; transform: scale(1); }
-    }
-    @keyframes fadePulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
-    }
-    @keyframes bar {
-      0% { transform: translateX(-100%); width: 30%; }
-      50% { width: 50%; }
-      100% { transform: translateX(400%); width: 30%; }
     }
   </style>
 </head>
 <body>
   <div id="root">
-    <div class="loading">
+    <div class="container">
       <div class="logo">
         <img src="/assets/dock-icon-CCeHpOYd.png" alt="DeepSeek Harness" />
       </div>
       <h1>DeepSeek Harness</h1>
-      <p>正在启动…</p>
-      <div class="loading-bar">
-        <div class="loading-bar-fill"></div>
+      <p class="phase-label">正在初始化…</p>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 25%"></div>
+        </div>
+        <div class="progress-steps">
+          <div class="progress-step active">
+            <div class="step-dot active"></div>
+            <span class="step-label">初始化</span>
+          </div>
+          <div class="progress-step">
+            <div class="step-dot"></div>
+            <span class="step-label">配置</span>
+          </div>
+          <div class="progress-step">
+            <div class="step-dot"></div>
+            <span class="step-label">运行时</span>
+          </div>
+          <div class="progress-step">
+            <div class="step-dot"></div>
+            <span class="step-label">服务</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

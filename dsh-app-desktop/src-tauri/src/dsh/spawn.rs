@@ -74,10 +74,25 @@ fn remove_locks_shallow(dir: &std::path::Path) {
     }
 }
 
+/// Find an available port on localhost.
+fn find_available_port() -> Option<u16> {
+    // Try ports in the range 52000-53000
+    for port in 52000..53000 {
+        if std::net::TcpListener::bind(format!("127.0.0.1:{}", port)).is_ok() {
+            return Some(port);
+        }
+    }
+    None
+}
+
 /// Spawn the harness sidecar using Tauri's shell sidecar API.
 pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result<SidecarHandle> {
     // Clean up stale locks from previous sessions before starting
     cleanup_stale_locks();
+
+    // Find a fixed port so restart can reuse the same port
+    let port = find_available_port().ok_or_else(|| anyhow::anyhow!("no available port found"))?;
+    info!("using fixed port {}", port);
 
     // On Windows, Tauri's externalBin places node.exe at the app root, not in
     // binaries/.  We fall back to finding it via the current executable path.
@@ -101,12 +116,20 @@ pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result
         dsh_path.to_string_lossy().to_string()
     };
 
-    let cmd = cmd.args([&dsh_arg, "web", "--port", "0"]);
+    let cmd = cmd.args([&dsh_arg, "web", "--port", &port.to_string()]);
 
-    info!("spawning harness sidecar: {} --port 0", dsh_arg);
+    info!("spawning harness sidecar: {} --port {}", dsh_arg, port);
 
     let (mut cmd_events, child) = cmd.spawn()?;
     let discovered_port = port::discover_port(&mut cmd_events).await?;
+
+    // Verify the port matches what we requested
+    if discovered_port != port {
+        warn!(
+            "sidecar bound to port {} instead of requested {}",
+            discovered_port, port
+        );
+    }
 
     Ok(SidecarHandle {
         port: discovered_port,

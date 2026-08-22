@@ -27,36 +27,15 @@
       width: 96px;
       height: 96px;
       margin: 0 auto 1.5rem;
-      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .logo-ring {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border: 3px solid transparent;
-      border-top-color: #4fc3f7;
-      border-right-color: #7c4dff;
-      border-radius: 50%;
-      animation: spin 1.5s linear infinite;
-    }
-    .logo-ring:nth-child(2) {
-      width: 80%;
-      height: 80%;
-      top: 10%;
-      left: 10%;
-      border-top-color: #7c4dff;
-      border-right-color: #4fc3f7;
-      animation-direction: reverse;
-      animation-duration: 2s;
-    }
-    .logo-inner {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #4fc3f7;
+    .logo img {
+      width: 96px;
+      height: 96px;
+      border-radius: 12px;
+      animation: pulse 2s ease-in-out infinite;
     }
     h1 {
       font-size: 1.35rem;
@@ -123,8 +102,9 @@
     .progress-step.active .step-label {
       color: #a0a0c0;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; transform: scale(0.96); }
+      50% { opacity: 1; transform: scale(1); }
     }
   </style>
 </head>
@@ -132,9 +112,7 @@
   <div id="root">
     <div class="container">
       <div class="logo">
-        <div class="logo-ring"></div>
-        <div class="logo-ring"></div>
-        <div class="logo-inner">DS</div>
+        <img src="src-tauri/icons/dock-icon.png" alt="DeepSeek Harness" />
       </div>
       <h1>DeepSeek Harness</h1>
       <p class="phase-label">正在初始化…</p>
