@@ -116,7 +116,7 @@ pub async fn spawn_sidecar(app: &AppHandle, dsh_path: PathBuf) -> anyhow::Result
         dsh_path.to_string_lossy().to_string()
     };
 
-    let cmd = cmd.args([&dsh_arg, "web", "--port", &port.to_string()]);
+    let cmd = cmd.args([&dsh_arg, "web", "--no-open", "--port", &port.to_string()]);
 
     info!("spawning harness sidecar: {} --port {}", dsh_arg, port);
 
